@@ -93,12 +93,6 @@ npx prisma db push
 npx tsx prisma/seed.ts
 ```
 
-This will create:
-
-- **Admin**: hireflow.notifications@gmail.com / hireflow@123
-- **Recruiter**: voweldasveeresh@gmail.com / veeresh@21
-- **Candidate**: john.doe@example.com / candidate123
-- Sample jobs
 
 ### 7. Run Development Server
 
