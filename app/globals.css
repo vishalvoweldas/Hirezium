@@ -1,0 +1,188 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 193 60% 22%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 193 60% 22%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 193 60% 22%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 193 60% 22%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply text-foreground;
+    background: linear-gradient(180deg, #124A59 0%, #08262C 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+
+  /* 1. GLOBAL GRADIENT BACKGROUND */
+  .gradient-bg {
+    background: linear-gradient(180deg, #124A59 0%, #08262C 100%);
+  }
+
+  .gradient-primary {
+    background: linear-gradient(135deg, #124A59 0%, #08262C 100%);
+  }
+
+  /* 2. PRIMARY CONTENT CONTAINER */
+  .content-container {
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 768px) {
+    .content-container {
+      padding: 32px;
+    }
+  }
+
+  /* 3. CARD SYSTEM */
+  .card-modern {
+    background: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    padding: 16px;
+  }
+
+  @media (min-width: 768px) {
+    .card-modern {
+      padding: 24px;
+    }
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-2xl hover:-translate-y-1;
+  }
+
+  /* 4. TYPOGRAPHY SYSTEM */
+  .text-primary-dark {
+    color: #0F172A;
+  }
+
+  .text-secondary-dark {
+    color: #475569;
+  }
+
+  .text-muted-dark {
+    color: #94A3B8;
+  }
+
+  .text-on-gradient {
+    color: #FFFFFF;
+  }
+
+  .text-on-gradient-muted {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  /* 5. BUTTON SYSTEM */
+  .btn-primary {
+    background: linear-gradient(135deg, #124A59, #08262C);
+    color: #FFFFFF;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    font-weight: 500;
+    padding: 12px 24px;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 8px 20px rgba(18, 74, 89, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    background: rgba(255, 255, 255, 0.12);
+    color: #FFFFFF;
+    backdrop-filter: blur(6px);
+    border-radius: 10px;
+    font-weight: 500;
+    padding: 12px 24px;
+    transition: all 0.3s ease;
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  /* 6. GLASSMORPHISM */
+  .glassmorphism {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  /* 7. MOBILE OPTIMIZATIONS */
+  @media (max-width: 768px) {
+    .content-container {
+      margin: 12px;
+      border-radius: 12px;
+    }
+  }
+
+  /* UTILITY CLASSES */
+  .primary-dark {
+    color: #124A59;
+  }
+
+  .primary-darker {
+    color: #08262C;
+  }
+
+  /* Input field styling */
+  .input-field {
+    @apply w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary-dark focus:ring-2 focus:ring-primary-dark/20 outline-none transition-all;
+  }
+}

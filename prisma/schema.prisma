@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String            @id @default(cuid())
+  email                  String            @unique
+  password               String
+  role                   UserRole          @default(CANDIDATE)
+  approvalStatus         ApprovalStatus    @default(APPROVED)
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  resetPasswordExpiresAt DateTime?
+  resetPasswordToken     String?           @unique
+  applications           Application[]
+  candidateProfile       CandidateProfile?
+  jobs                   Job[]
+  recruiterProfile       RecruiterProfile?
+  savedJobs              SavedJob[]
+
+  @@index([email])
+  @@index([role])
+  @@index([approvalStatus])
+}
+
+model CandidateProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  phone             String?
+  location          String?
+  experience        Int?
+  skills            String[]
+  resumeUrl         String?
+  resumePublicId    String?
+  bio               String?
+  profileCompletion Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  firstName         String?
+  lastName          String?
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model RecruiterProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  companyName    String
+  companyWebsite String?
+  phone          String?
+  location       String?
+  designation    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Job {
+  id            String        @id @default(cuid())
+  recruiterId   String
+  title         String
+  description   String
+  location      String
+  jobType       JobType       @default(FULL_TIME)
+  experience    String
+  skills        String[]
+  salary        String?
+  stages        Int           @default(1)
+  selectedCount Int           @default(0)
+  isActive      Boolean       @default(true)
+  isRemote      Boolean       @default(false)
+  companyLogo   String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  deadline      DateTime?
+  applications  Application[]
+  recruiter     User          @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+  savedBy       SavedJob[]
+
+  @@index([recruiterId])
+  @@index([isActive])
+  @@index([jobType])
+  @@index([location])
+}
+
+model Application {
+  id           String            @id @default(cuid())
+  jobId        String
+  candidateId  String
+  status       ApplicationStatus @default(NEW)
+  currentStage Int               @default(1)
+  resumeUrl    String?
+  resumePublicId String?
+  coverLetter  String?
+  notes        String?
+  appliedAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  selectedAt   DateTime?
+  candidate    User              @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  job          Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, candidateId])
+  @@index([jobId])
+  @@index([candidateId])
+  @@index([status])
+}
+
+model SavedJob {
+  id          String   @id @default(cuid())
+  jobId       String
+  candidateId String
+  savedAt     DateTime @default(now())
+  candidate   User     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, candidateId])
+  @@index([candidateId])
+  @@index([jobId])
+}
+
+model PlacementStats {
+  id          String   @id @default(cuid())
+  year        Int      @unique
+  totalPlaced Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([year])
+}
+
+model CompanyPlacementStats {
+  id          String   @id @default(cuid())
+  companyName String
+  year        Int
+  placedCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([companyName, year])
+  @@index([year])
+  @@index([companyName])
+}
+
+enum UserRole {
+  ADMIN
+  RECRUITER
+  CANDIDATE
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ApplicationStatus {
+  NEW
+  REVIEWED
+  SHORTLISTED
+  STAGE_1
+  STAGE_2
+  STAGE_3
+  STAGE_4
+  STAGE_5
+  REJECTED
+  SELECTED
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+}
