@@ -17,7 +17,7 @@ const testimonials: Testimonial[] = [
         name: "Sarah Johnson",
         role: "Senior Software Engineer",
         company: "Google",
-        feedback: "HireFlow made my job search incredibly smooth. I got placed at my dream company within 3 weeks! The platform's matching algorithm is spot-on.",
+        feedback: "Hirezium made my job search incredibly smooth. I got placed at my dream company within 3 weeks! The platform's matching algorithm is spot-on.",
         imageUrl: "/testimonials/sarah.png",
         rating: 5
     },
@@ -26,7 +26,7 @@ const testimonials: Testimonial[] = [
         name: "Michael Chen",
         role: "Product Manager",
         company: "Microsoft",
-        feedback: "The recruiter connections on HireFlow are top-notch. I received multiple offers and found the perfect role that aligned with my career goals.",
+        feedback: "The recruiter connections on Hirezium are top-notch. I received multiple offers and found the perfect role that aligned with my career goals.",
         imageUrl: "/testimonials/michael.png",
         rating: 5
     },
@@ -35,7 +35,7 @@ const testimonials: Testimonial[] = [
         name: "Priya Sharma",
         role: "Data Scientist",
         company: "Amazon",
-        feedback: "As a career switcher, HireFlow helped me land my first data science role. The platform's resources and job matches were exactly what I needed.",
+        feedback: "As a career switcher, Hirezium helped me land my first data science role. The platform's resources and job matches were exactly what I needed.",
         imageUrl: "/testimonials/priya.png",
         rating: 5
     },
@@ -44,7 +44,7 @@ const testimonials: Testimonial[] = [
         name: "David Martinez",
         role: "UX Designer",
         company: "Meta",
-        feedback: "I was skeptical at first, but HireFlow exceeded my expectations. The application tracking and recruiter feedback features are game-changers.",
+        feedback: "I was skeptical at first, but Hirezium exceeded my expectations. The application tracking and recruiter feedback features are game-changers.",
         imageUrl: "/testimonials/david.png",
         rating: 5
     },
@@ -53,7 +53,7 @@ const testimonials: Testimonial[] = [
         name: "Emily Thompson",
         role: "Marketing Manager",
         company: "Salesforce",
-        feedback: "HireFlow's platform is intuitive and professional. I appreciated the personalized job recommendations and quick response from recruiters.",
+        feedback: "Hirezium's platform is intuitive and professional. I appreciated the personalized job recommendations and quick response from recruiters.",
         rating: 5
     },
     {
@@ -61,7 +61,7 @@ const testimonials: Testimonial[] = [
         name: "Raj Patel",
         role: "Full Stack Developer",
         company: "Netflix",
-        feedback: "Within 2 weeks of signing up, I had 5 interviews lined up. HireFlow's efficiency and quality of job matches are unmatched!",
+        feedback: "Within 2 weeks of signing up, I had 5 interviews lined up. Hirezium's efficiency and quality of job matches are unmatched!",
         rating: 5
     }
 ]
@@ -85,7 +85,7 @@ export default function TestimonialsSection() {
                             Hear From Our Placed Candidates
                         </h2>
                         <p className="text-xl text-secondary-dark max-w-2xl mx-auto">
-                            Join thousands of professionals who found their dream jobs through HireFlow
+                            Join thousands of professionals who found their dream jobs through Hirezium
                         </p>
                     </div>
 
@@ -150,9 +150,9 @@ export default function TestimonialsSection() {
 
                                 {/* Badge */}
                                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-[#124A59]/10 to-[#08262C]/10 rounded-full">
-                                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[#124A59] to-[#08262C]"></div>
+                                    <img src="/icon-transparent.png" alt="Icon" className="w-4 h-4 object-contain" />
                                     <span className="text-xs font-medium text-primary-dark">
-                                        Placed via HireFlow
+                                        Placed via Hirezium
                                     </span>
                                 </div>
                             </div>

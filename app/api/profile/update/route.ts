@@ -38,6 +38,10 @@ async function updateProfileHandler(request: AuthenticatedRequest) {
                     bio: validatedData.bio,
                     resumeUrl: validatedData.resumeUrl,
                     resumePublicId: validatedData.resumePublicId,
+                    currentCompany: validatedData.currentCompany,
+                    noticePeriod: validatedData.noticePeriod,
+                    currentCtc: validatedData.currentCtc,
+                    expectedCtc: validatedData.expectedCtc,
                 },
             })
 

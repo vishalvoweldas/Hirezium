@@ -29,7 +29,7 @@ export async function uploadToCloudinary(
     cloudinary.uploader
       .upload_stream(
         {
-          folder: `hireflow/${folder}`,
+          folder: `hirezium/${folder}`,
           resource_type: 'raw',    // Raw type for PDF/DOC/DOCX
           public_id: publicId,
           type: 'authenticated',   // Required for signed URLs

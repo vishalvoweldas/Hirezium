@@ -59,8 +59,9 @@ export default function CandidateNavbar() {
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
-                    <Link href="/" className="text-2xl font-heading font-bold hover:opacity-90 transition-opacity">
-                        HireFlow
+                    <Link href="/" className="flex items-center gap-0 text-2xl font-heading font-bold hover:opacity-90 transition-opacity">
+                        <img src="/icon-transparent.png" alt="Hirezium Logo" className="w-12 h-12 md:w-16 md:h-16 object-contain" />
+                        Hirezium
                     </Link>
 
                     {/* Desktop-only Nav Items */}

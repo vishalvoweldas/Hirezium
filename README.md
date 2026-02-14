@@ -1,4 +1,4 @@
-# HireFlow - Modern SaaS Job Portal
+# Hirezium - Modern SaaS Job Portal
 
 A production-ready job portal SaaS with 3-layer authentication (Admin, Recruiter, Candidate), built with Next.js, Prisma, and PostgreSQL.
 
@@ -50,7 +50,7 @@ EMAIL_HOST="smtp.gmail.com"
 EMAIL_PORT="587"
 EMAIL_USER="your-email@gmail.com"
 EMAIL_PASSWORD="your-app-password"
-EMAIL_FROM="HireFlow <noreply@hireflow.com>"
+EMAIL_FROM="Hirezium <noreply@hirezium.com>"
 
 # App URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
@@ -95,7 +95,7 @@ npx tsx prisma/seed.ts
 
 This will create:
 
-- **Admin**: hireflow.notifications@gmail.com / hireflow@123
+- **Admin**: hirezium.notifications@gmail.com / hirezium@123
 - **Recruiter**: voweldasveeresh@gmail.com / veeresh@21
 - **Candidate**: john.doe@example.com / candidate123
 - Sample jobs
@@ -117,7 +117,7 @@ git init
 git add .
 git commit -m "Initial commit"
 git branch -M main
-git remote add origin https://github.com/yourusername/hireflow.git
+git remote add origin https://github.com/yourusername/hirezium.git
 git push -u origin main
 ```
 
@@ -175,7 +175,7 @@ npx tsx prisma/seed.ts
 ## 🏗️ Project Structure
 
 ```
-hireflow/
+hirezium/
 ├── app/
 │   ├── api/              # API routes
 │   ├── auth/             # Authentication pages

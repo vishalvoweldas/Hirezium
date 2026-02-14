@@ -87,8 +87,9 @@ export default function AdminDashboard() {
             <nav className="gradient-primary text-white">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
-                        <Link href="/" className="text-2xl font-heading font-bold">
-                            HireFlow Admin
+                        <Link href="/" className="flex items-center gap-0 text-lg md:text-2xl font-heading font-bold">
+                            <img src="/icon-transparent.png" alt="Hirezium Logo" className="w-12 h-12 md:w-16 md:h-16 object-contain" />
+                            <span>Hirezium Admin</span>
                         </Link>
                         <Button variant="ghost" className="text-white hover:bg-white/10" onClick={handleLogout}>
                             <LogOut className="w-4 h-4 mr-2" />

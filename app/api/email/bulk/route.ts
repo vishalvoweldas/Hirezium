@@ -91,7 +91,7 @@ async function handler(request: AuthenticatedRequest) {
         // Send
         await transporter.sendMail({
           from:
-            process.env.EMAIL_FROM || `"HireFlow" <${process.env.EMAIL_USER}>`,
+            process.env.EMAIL_FROM || `"Hirezium" <${process.env.EMAIL_USER}>`,
           to: candidate.email,
           subject: personalizedSubject,
           text: personalizedBody, // Plain text for now

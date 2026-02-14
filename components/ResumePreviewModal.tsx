@@ -141,7 +141,7 @@ export default function ResumePreviewModal({
   return (
     <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-4xl w-[95vw] h-[90vh] p-0 flex flex-col overflow-hidden">
-        <DialogHeader className="p-4 border-b flex justify-between flex-row items-center">
+        <DialogHeader className="p-4 pr-12 border-b flex justify-between flex-row items-center">
           <div>
             <DialogTitle>Secure Resume Preview</DialogTitle>
             <DialogDescription className="sr-only">
@@ -153,9 +153,7 @@ export default function ResumePreviewModal({
               <Download className="w-4 h-4 mr-2" />
               Download
             </Button>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="w-4 h-4" />
-            </Button>
+
           </div>
         </DialogHeader>
 

@@ -23,11 +23,15 @@ export default function CandidateProfile() {
         lastName: '',
         phone: '',
         location: '',
-        experience: 0,
+        experience: 0 as string | number,
         skills: [] as string[],
         bio: '',
         resumeUrl: '',
         resumePublicId: '',
+        currentCompany: '',
+        noticePeriod: '',
+        currentCtc: '',
+        expectedCtc: '',
     })
     const [newSkill, setNewSkill] = useState('')
     const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -54,6 +58,10 @@ export default function CandidateProfile() {
                     bio: data.user.profile.bio || '',
                     resumeUrl: data.user.profile.resumeUrl || '',
                     resumePublicId: data.user.profile.resumePublicId || '',
+                    currentCompany: data.user.profile.currentCompany || '',
+                    noticePeriod: data.user.profile.noticePeriod || '',
+                    currentCtc: data.user.profile.currentCtc || '',
+                    expectedCtc: data.user.profile.expectedCtc || '',
                 })
             }
         } catch (error) {
@@ -132,6 +140,15 @@ export default function CandidateProfile() {
             !formData.skills || formData.skills.length === 0 ||
             (!formData.resumeUrl && !resumeFile)
 
+        // Conditional mandatory fields check
+        const isExperienced = Number(formData.experience) > 0
+        if (isExperienced) {
+            if (!formData.currentCompany || !formData.noticePeriod || !formData.currentCtc || !formData.expectedCtc) {
+                alert('All company details are mandatory for experienced candidates')
+                return
+            }
+        }
+
         if (isMissingFields) {
             alert('all the red* fields should be provide')
             return
@@ -158,6 +175,7 @@ export default function CandidateProfile() {
                 },
                 body: JSON.stringify({
                     ...formData,
+                    experience: parseFloat(formData.experience.toString()),
                     resumeUrl,
                     resumePublicId,
                 }),
@@ -184,7 +202,7 @@ export default function CandidateProfile() {
             <nav className="gradient-primary text-white">
                 <div className="container mx-auto px-4 py-4">
                     <Link href="/dashboard/candidate" className="text-2xl font-heading font-bold">
-                        HireFlow
+                        Hirezium
                     </Link>
                 </div>
             </nav>
@@ -284,14 +302,68 @@ export default function CandidateProfile() {
 
                             <div className="space-y-2">
                                 <Label htmlFor="experience">Years of Experience <span className="text-red-500">*</span></Label>
+                                {/* Use text input to allow decimals without browser interference */}
                                 <Input
                                     id="experience"
-                                    type="number"
-                                    min="0"
+                                    type="text"
+                                    autoComplete="off"
+                                    className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                     value={formData.experience}
-                                    onChange={(e) => setFormData({ ...formData, experience: parseInt(e.target.value) || 0 })}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        // Allow only numbers and a single decimal point
+                                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                            setFormData({ ...formData, experience: value });
+                                        }
+                                    }}
+                                    placeholder="0"
                                 />
                             </div>
+
+                            {Number(formData.experience) > 0 && (
+                                <>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="currentCompany">Current Company <span className="text-red-500">*</span></Label>
+                                            <Input
+                                                id="currentCompany"
+                                                value={formData.currentCompany}
+                                                onChange={(e) => setFormData({ ...formData, currentCompany: e.target.value })}
+                                                placeholder="Company Name"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="noticePeriod">Notice Period <span className="text-red-500">*</span></Label>
+                                            <Input
+                                                id="noticePeriod"
+                                                value={formData.noticePeriod}
+                                                onChange={(e) => setFormData({ ...formData, noticePeriod: e.target.value })}
+                                                placeholder="e.g. 30 days"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="currentCtc">Current CTC <span className="text-red-500">*</span></Label>
+                                            <Input
+                                                id="currentCtc"
+                                                value={formData.currentCtc}
+                                                onChange={(e) => setFormData({ ...formData, currentCtc: e.target.value })}
+                                                placeholder="e.g. 10 LPA"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="expectedCtc">Expected CTC <span className="text-red-500">*</span></Label>
+                                            <Input
+                                                id="expectedCtc"
+                                                value={formData.expectedCtc}
+                                                onChange={(e) => setFormData({ ...formData, expectedCtc: e.target.value })}
+                                                placeholder="e.g. 15 LPA"
+                                            />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
 
                             <div className="space-y-2">
                                 <Label>Skills <span className="text-red-500">*</span></Label>

@@ -4,6 +4,7 @@ import { requireRole, AuthenticatedRequest } from '@/lib/middleware'
 import { UserRole } from '@prisma/client'
 import { generateExcel, generatePDF, filterApplicantData, ApplicantData, ExportFilters } from '@/lib/export'
 import { getPreviewResumeUrl } from '@/lib/utils'
+import { generateSignedUrl } from '@/lib/cloudinary'
 
 // GET /api/export/applicants/[jobId] - Export applicants data (Recruiter/Admin)
 async function exportApplicantsHandler(
@@ -64,19 +65,41 @@ async function exportApplicantsHandler(
 
 
         // Transform data
-        const applicantsData: ApplicantData[] = applications.map((app: any) => ({
-            name: app.candidate.candidateProfile
-                ? `${app.candidate.candidateProfile.firstName} ${app.candidate.candidateProfile.lastName}`
-                : 'N/A',
-            email: app.candidate.email,
-            phone: app.candidate.candidateProfile?.phone || undefined,
-            location: app.candidate.candidateProfile?.location || undefined,
-            experience: app.candidate.candidateProfile?.experience || undefined,
-            skills: app.candidate.candidateProfile?.skills || undefined,
-            resumeUrl: getPreviewResumeUrl(app.resumeUrl || app.candidate.candidateProfile?.resumeUrl) || undefined,
-            status: app.status,
-            appliedAt: app.appliedAt,
-        }))
+        const applicantsData: ApplicantData[] = applications.map((app: any) => {
+            // Logic for resume URL:
+            // 1. Try to get signed URL from public ID (application specific or profile)
+            // 2. Fallback to existing URL logic (legacy or external links)
+
+            let resumeUrl = undefined
+            const publicId = app.resumePublicId || app.candidate.candidateProfile?.resumePublicId
+
+            if (publicId) {
+                try {
+                    resumeUrl = generateSignedUrl(publicId)
+                } catch (e) {
+                    console.error('Error signing URL for publicId:', publicId, e)
+                }
+            }
+
+            // Fallback if no signed URL generated
+            if (!resumeUrl) {
+                resumeUrl = getPreviewResumeUrl(app.resumeUrl || app.candidate.candidateProfile?.resumeUrl) || undefined
+            }
+
+            return {
+                name: app.candidate.candidateProfile
+                    ? `${app.candidate.candidateProfile.firstName} ${app.candidate.candidateProfile.lastName}`
+                    : 'N/A',
+                email: app.candidate.email,
+                phone: app.candidate.candidateProfile?.phone || undefined,
+                location: app.candidate.candidateProfile?.location || undefined,
+                experience: app.candidate.candidateProfile?.experience || undefined,
+                skills: app.candidate.candidateProfile?.skills || undefined,
+                resumeUrl: resumeUrl,
+                status: app.status,
+                appliedAt: app.appliedAt,
+            }
+        })
 
         // Apply filters
         const filters: ExportFilters = {

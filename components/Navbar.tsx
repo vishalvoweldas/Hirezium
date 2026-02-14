@@ -65,8 +65,9 @@ export function Navbar({ userRole, userName }: NavbarProps) {
             <div className="container mx-auto px-4 py-4">
                 <div className="flex items-center justify-between">
                     {/* Logo */}
-                    <Link href="/" className="text-2xl font-heading font-bold hover:opacity-90 transition-opacity">
-                        HireFlow
+                    <Link href="/" className="flex items-center gap-0 text-lg md:text-2xl font-heading font-bold hover:opacity-90 transition-opacity">
+                        <img src="/icon-transparent.png" alt="Hirezium Logo" className="w-12 h-12 md:w-16 md:h-16 object-contain" />
+                        Hirezium
                     </Link>
 
                     {/* Desktop Navigation */}
@@ -76,8 +77,8 @@ export function Navbar({ userRole, userName }: NavbarProps) {
                                 key={item.href}
                                 href={item.href}
                                 className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${pathname === item.href
-                                        ? 'bg-white/20 font-semibold'
-                                        : 'hover:bg-white/10'
+                                    ? 'bg-white/20 font-semibold'
+                                    : 'hover:bg-white/10'
                                     }`}
                             >
                                 <item.icon className="w-4 h-4" />
@@ -132,8 +133,8 @@ export function Navbar({ userRole, userName }: NavbarProps) {
                                     key={item.href}
                                     href={item.href}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${pathname === item.href
-                                            ? 'bg-white/20 font-semibold'
-                                            : 'hover:bg-white/10'
+                                        ? 'bg-white/20 font-semibold'
+                                        : 'hover:bg-white/10'
                                         }`}
                                     onClick={() => setMobileMenuOpen(false)}
                                 >

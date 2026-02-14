@@ -33,11 +33,15 @@ model CandidateProfile {
   userId            String   @unique
   phone             String?
   location          String?
-  experience        Int?
+  experience        Float?
   skills            String[]
   resumeUrl         String?
   resumePublicId    String?
   bio               String?
+  currentCompany    String?
+  noticePeriod      String?
+  currentCtc        String?
+  expectedCtc       String?
   profileCompletion Int      @default(0)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt

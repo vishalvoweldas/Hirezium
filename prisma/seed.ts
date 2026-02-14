@@ -7,12 +7,12 @@ async function main() {
   console.log("🌱 Starting database seed...");
 
   // Create Admin User
-  const adminPassword = await bcrypt.hash("hireflow@123", 10);
+  const adminPassword = await bcrypt.hash("hirezium@123", 10);
   const admin = await prisma.user.upsert({
-    where: { email: "hireflow.notifications@gmail.com" },
+    where: { email: "hirezium.notifications@gmail.com" },
     update: {},
     create: {
-      email: "hireflow.notifications@gmail.com",
+      email: "hirezium.notifications@gmail.com",
       password: adminPassword,
       role: UserRole.ADMIN,
       approvalStatus: ApprovalStatus.APPROVED,
@@ -109,7 +109,7 @@ async function main() {
 
   console.log("\n🎉 Seed completed successfully!");
   console.log("\n📝 Login Credentials:");
-  console.log("Admin: hireflow.notifications@gmail.com / hireflow@123");
+  console.log("Admin: hirezium.notifications@gmail.com / hirezium@123");
   console.log("Recruiter: voweldasveeresh@gmail.com / veeresh@21");
   console.log("Candidate: john.doe@example.com / candidate123");
 }

@@ -13,8 +13,11 @@ const jakarta = Plus_Jakarta_Sans({
 })
 
 export const metadata: Metadata = {
-    title: "HireFlow - Modern Job Portal",
-    description: "Find your dream job or hire top talent with HireFlow",
+    title: "Hirezium - Modern Job Portal",
+    description: "Find your dream job or hire top talent with Hirezium",
+    icons: {
+        icon: '/icon-transparent.png', // Using the provided icon as favicon
+    }
 }
 
 export default function RootLayout({

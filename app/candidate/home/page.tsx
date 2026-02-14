@@ -333,7 +333,10 @@ export default function CandidateHomePage() {
                     <div className="grid md:grid-cols-3 gap-8 mb-8">
                         {/* Brand Section */}
                         <div>
-                            <h3 className="text-2xl font-heading font-bold mb-4">HireFlow</h3>
+                            <div className="flex items-center gap-0 mb-4">
+                                <img src="/icon-transparent.png" alt="Hirezium Logo" className="w-12 h-12 md:w-16 md:h-16 object-contain" />
+                                <h3 className="text-2xl font-heading font-bold">Hirezium</h3>
+                            </div>
                             <p className="text-on-gradient-muted">
                                 Connecting talented professionals with their dream careers.
                             </p>
@@ -366,18 +369,18 @@ export default function CandidateHomePage() {
                             <h4 className="font-semibold mb-4">Follow Us</h4>
                             <div className="flex gap-4">
                                 <a
-                                    href="https://www.facebook.com"
+                                    href="https://youtube.com/@hirezium?si=4S8Gza6YAvI3SgIu"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all hover:scale-110"
-                                    aria-label="Facebook"
+                                    aria-label="YouTube"
                                 >
                                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                                     </svg>
                                 </a>
                                 <a
-                                    href="https://www.instagram.com"
+                                    href="https://www.instagram.com/hirezium?igsh=aW95Z2p0NDFqaDRv"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all hover:scale-110"
@@ -388,7 +391,7 @@ export default function CandidateHomePage() {
                                     </svg>
                                 </a>
                                 <a
-                                    href="https://www.linkedin.com"
+                                    href="https://www.linkedin.com/in/veeresh-voweldas-711945267"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all hover:scale-110"
@@ -405,7 +408,7 @@ export default function CandidateHomePage() {
                     {/* Copyright */}
                     <div className="text-center pt-8 border-t border-white/10">
                         <p className="text-on-gradient-muted">
-                            © 2024 HireFlow. All rights reserved.
+                            © 2024 Hirezium. All rights reserved.
                         </p>
                     </div>
                 </div>

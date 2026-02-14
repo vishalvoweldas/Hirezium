@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
 
         // Get admin user (without password)
         const admin = await prisma.user.findUnique({
-            where: { email: 'admin@hireflow.com' },
+            where: { email: 'admin@hirezium.com' },
             select: {
                 id: true,
                 email: true,

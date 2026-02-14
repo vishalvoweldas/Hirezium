@@ -47,8 +47,9 @@ export default function SavedJobsPage() {
         <div className="min-h-screen bg-gray-50">
             <nav className="gradient-primary text-white">
                 <div className="container mx-auto px-4 py-4">
-                    <Link href="/dashboard/candidate" className="text-2xl font-heading font-bold">
-                        HireFlow
+                    <Link href="/dashboard/candidate" className="flex items-center gap-0 text-lg md:text-2xl font-heading font-bold">
+                        <img src="/icon-transparent.png" alt="Hirezium Logo" className="w-12 h-12 md:w-16 md:h-16 object-contain" />
+                        <span>Hirezium</span>
                     </Link>
                 </div>
             </nav>

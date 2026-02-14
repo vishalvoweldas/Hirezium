@@ -21,7 +21,10 @@ export default function ApplicantsPage() {
     const [loading, setLoading] = useState(true)
     const [selectedJob, setSelectedJob] = useState<string>('all')
     const [jobs, setJobs] = useState<any[]>([])
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+    const [previewData, setPreviewData] = useState<{ url: string | null; publicId: string | null }>({
+        url: null,
+        publicId: null
+    })
 
     useEffect(() => {
         fetchJobs()
@@ -99,8 +102,9 @@ export default function ApplicantsPage() {
         <div className="min-h-screen bg-gray-50">
             <nav className="gradient-primary text-white">
                 <div className="container mx-auto px-4 py-4">
-                    <Link href="/dashboard/recruiter" className="text-2xl font-heading font-bold">
-                        HireFlow
+                    <Link href="/dashboard/recruiter" className="flex items-center gap-0 text-lg md:text-2xl font-heading font-bold">
+                        <img src="/icon-transparent.png" alt="Hirezium Logo" className="w-12 h-12 md:w-16 md:h-16 object-contain" />
+                        <span>Hirezium</span>
                     </Link>
                 </div>
             </nav>
@@ -181,11 +185,14 @@ export default function ApplicantsPage() {
                                                 <SelectItem value="REJECTED">Rejected</SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        {app.resumeUrl && (
+                                        {(app.resumeUrl || app.candidate.candidateProfile?.resumeUrl) && (
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                onClick={() => setPreviewUrl(app.resumeUrl)}
+                                                onClick={() => setPreviewData({
+                                                    url: app.resumeUrl || app.candidate.candidateProfile?.resumeUrl,
+                                                    publicId: app.resumePublicId || app.candidate.candidateProfile?.resumePublicId
+                                                })}
                                             >
                                                 View Resume
                                             </Button>
@@ -199,8 +206,9 @@ export default function ApplicantsPage() {
             </div>
 
             <ResumePreviewModal
-                url={previewUrl}
-                onClose={() => setPreviewUrl(null)}
+                url={previewData.url}
+                publicId={previewData.publicId}
+                onClose={() => setPreviewData({ url: null, publicId: null })}
             />
         </div>
     )

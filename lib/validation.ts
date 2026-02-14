@@ -50,9 +50,44 @@ export const profileUpdateSchema = z.object({
     lastName: z.string().min(1, 'Last name is required'),
     phone: z.string().min(1, 'Phone number is required'),
     location: z.string().optional(),
-    experience: z.number().int().min(0, 'Years of experience is required').max(50),
+    experience: z.number().min(0, 'Years of experience is required').max(50),
     skills: z.array(z.string()).min(1, 'At least one skill is required'),
     bio: z.string().max(500, 'Bio must be less than 500 characters').optional(),
     resumeUrl: z.string().url('Invalid resume URL').min(1, 'Resume is required').or(z.literal('')),
     resumePublicId: z.string().optional(),
+    currentCompany: z.string().optional(),
+    noticePeriod: z.string().optional(),
+    currentCtc: z.string().optional(),
+    expectedCtc: z.string().optional(),
+}).superRefine((data, ctx) => {
+    if (data.experience > 0) {
+        if (!data.currentCompany) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Current Company is required for experienced candidates",
+                path: ["currentCompany"]
+            });
+        }
+        if (!data.noticePeriod) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Notice Period is required for experienced candidates",
+                path: ["noticePeriod"]
+            });
+        }
+        if (!data.currentCtc) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Current CTC is required for experienced candidates",
+                path: ["currentCtc"]
+            });
+        }
+        if (!data.expectedCtc) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Expected CTC is required for experienced candidates",
+                path: ["expectedCtc"]
+            });
+        }
+    }
 })

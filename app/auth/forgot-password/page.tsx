@@ -47,8 +47,11 @@ export default function ForgotPasswordPage() {
             <Card className="w-full max-w-md">
                 <CardHeader className="space-y-1">
                     <div className="flex justify-center mb-4">
-                        <Link href="/" className="text-3xl font-heading font-bold bg-gradient-to-r from-[#124A59] to-[#08262C] bg-clip-text text-transparent">
-                            HireFlow
+                        <Link href="/" className="flex items-center gap-0">
+                            <img src="/icon-transparent.png" alt="Hirezium Logo" className="w-12 h-12 md:w-16 md:h-16 object-contain" />
+                            <span className="text-3xl font-heading font-bold bg-gradient-to-r from-[#124A59] to-[#08262C] bg-clip-text text-transparent">
+                                Hirezium
+                            </span>
                         </Link>
                     </div>
                     <CardTitle className="text-2xl text-center">Forgot Password?</CardTitle>

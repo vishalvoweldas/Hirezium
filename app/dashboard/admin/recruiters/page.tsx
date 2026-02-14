@@ -52,7 +52,7 @@ export default function ManageRecruitersPage() {
             <nav className="gradient-primary text-white">
                 <div className="container mx-auto px-4 py-4">
                     <Link href="/dashboard/admin" className="text-2xl font-heading font-bold">
-                        HireFlow Admin
+                        Hirezium Admin
                     </Link>
                 </div>
             </nav>
