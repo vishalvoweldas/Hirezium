@@ -1,16 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Eye, EyeOff } from 'lucide-react'
 
-export default function LoginPage() {
+function LoginForm() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const redirectTo = searchParams.get('redirect')
+
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -41,7 +44,13 @@ export default function LoginPage() {
             localStorage.setItem('token', data.token)
             localStorage.setItem('user', JSON.stringify(data.user))
 
-            // Redirect based on role
+            // Honor redirect parameter if it exists
+            if (redirectTo) {
+                router.push(redirectTo)
+                return
+            }
+
+            // Fallback to role-based redirect
             if (data.user.role === 'ADMIN') {
                 router.push('/dashboard/admin')
             } else if (data.user.role === 'RECRUITER') {
@@ -133,14 +142,20 @@ export default function LoginPage() {
 
                         <div className="text-center text-sm text-gray-600">
                             Don't have an account?{' '}
-                            <Link href="/auth/signup" className="text-primary-dark font-semibold hover:underline">
+                            <Link
+                                href={redirectTo ? `/auth/signup?redirect=${encodeURIComponent(redirectTo)}` : "/auth/signup"}
+                                className="text-primary-dark font-semibold hover:underline"
+                            >
                                 Sign up
                             </Link>
                         </div>
 
                         <div className="text-center text-sm text-gray-600">
                             Are you a recruiter?{' '}
-                            <Link href="/auth/recruiter-register" className="text-primary-dark font-semibold hover:underline">
+                            <Link
+                                href={redirectTo ? `/auth/recruiter-register?redirect=${encodeURIComponent(redirectTo)}` : "/auth/recruiter-register"}
+                                className="text-primary-dark font-semibold hover:underline"
+                            >
                                 Register here
                             </Link>
                         </div>
@@ -148,5 +163,13 @@ export default function LoginPage() {
                 </CardContent>
             </Card>
         </div>
+    )
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen gradient-primary flex items-center justify-center p-4 text-white">Loading...</div>}>
+            <LoginForm />
+        </Suspense>
     )
 }

@@ -19,6 +19,8 @@ async function exportApplicantsHandler(
         const includeEmail = searchParams.get('includeEmail') === 'true'
         const includeResume = searchParams.get('includeResume') === 'true'
         const includeFull = searchParams.get('includeFull') === 'true'
+        const fromDate = searchParams.get('fromDate')
+        const toDate = searchParams.get('toDate')
 
         // Check if job exists
         const job = await prisma.job.findUnique({
@@ -43,9 +45,24 @@ async function exportApplicantsHandler(
             )
         }
 
+        // Build filtering where clause
+        const whereClause: any = { jobId }
+        if (fromDate || toDate) {
+            whereClause.appliedAt = {}
+            if (fromDate) {
+                whereClause.appliedAt.gte = new Date(fromDate)
+            }
+            if (toDate) {
+                // To include the entire 'to' day, we set it to the end of the day or start of next
+                const endToDate = new Date(toDate)
+                endToDate.setHours(23, 59, 59, 999)
+                whereClause.appliedAt.lte = endToDate
+            }
+        }
+
         // Fetch applicants
         const applications = await prisma.application.findMany({
-            where: { jobId },
+            where: whereClause,
             include: {
                 candidate: {
                     include: {
@@ -58,7 +75,7 @@ async function exportApplicantsHandler(
 
         if (applications.length === 0) {
             return NextResponse.json(
-                { error: 'No applicants found for this job' },
+                { error: 'No applicants found for the selected criteria' },
                 { status: 404 }
             )
         }
@@ -95,6 +112,8 @@ async function exportApplicantsHandler(
                 location: app.candidate.candidateProfile?.location || undefined,
                 experience: app.candidate.candidateProfile?.experience || undefined,
                 skills: app.candidate.candidateProfile?.skills || undefined,
+                currentRole: app.candidate.candidateProfile?.currentRole || undefined,
+                currentCompany: app.candidate.candidateProfile?.currentCompany || undefined,
                 resumeUrl: resumeUrl,
                 status: app.status,
                 appliedAt: app.appliedAt,

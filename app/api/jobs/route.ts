@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
         const jobType = searchParams.get('jobType') || ''
         const experience = searchParams.get('experience') || ''
         const isRemote = searchParams.get('isRemote') === 'true'
+        const workMode = searchParams.get('workMode') || ''
         const page = parseInt(searchParams.get('page') || '1')
         const limit = parseInt(searchParams.get('limit') || '10')
 
@@ -44,7 +45,11 @@ export async function GET(request: NextRequest) {
         }
 
         if (isRemote) {
-            where.isRemote = true
+            where.workMode = 'REMOTE'
+        }
+
+        if (workMode) {
+            where.workMode = workMode
         }
 
         // Fetch jobs
@@ -71,7 +76,6 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
             jobs: jobs.map(job => ({
                 ...job,
-                companyName: job.recruiter.recruiterProfile?.companyName,
                 applicantCount: job._count.applications,
             })),
             pagination: {

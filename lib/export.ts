@@ -9,6 +9,8 @@ export interface ApplicantData {
     location?: string
     experience?: number
     skills?: string[]
+    currentCompany?: string
+    currentRole?: string
     resumeUrl?: string
     status: string
     appliedAt: Date
@@ -33,10 +35,12 @@ export function filterApplicantData(
                 Phone: applicant.phone || 'N/A',
                 Location: applicant.location || 'N/A',
                 Experience: applicant.experience ? `${applicant.experience} years` : 'N/A',
+                'Current Role': applicant.currentRole || 'N/A',
+                'Current Company': applicant.currentCompany || 'N/A',
                 Skills: applicant.skills?.join(', ') || 'N/A',
                 'Resume URL': applicant.resumeUrl || 'N/A',
                 Status: applicant.status,
-                'Applied At': new Date(applicant.appliedAt).toLocaleDateString(),
+                'Applied At': new Date(applicant.appliedAt).toLocaleString(),
             }
         }
 

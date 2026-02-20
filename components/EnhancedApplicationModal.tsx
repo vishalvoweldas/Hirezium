@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Input } from '@/components/ui/input'
-import { Upload, FileText, X, CheckCircle, User, MapPin, Briefcase } from 'lucide-react'
+import { Upload, FileText, X, CheckCircle, User, MapPin, Briefcase, Info } from 'lucide-react'
 
 interface EnhancedApplicationModalProps {
     open: boolean
@@ -33,16 +33,51 @@ export default function EnhancedApplicationModal({
     const [submitting, setSubmitting] = useState(false)
     const [success, setSuccess] = useState(false)
 
+    // Mandatory Profile States
+    const [firstName, setFirstName] = useState('')
+    const [lastName, setLastName] = useState('')
+    const [phone, setPhone] = useState('')
+    const [location, setLocation] = useState('')
+    const [experience, setExperience] = useState<string>('')
+    const [skillsString, setSkillsString] = useState('')
+    const [currentCompany, setCurrentCompany] = useState('')
+    const [currentRole, setCurrentRole] = useState('')
+    const [noticePeriod, setNoticePeriod] = useState('')
+    const [currentCtc, setCurrentCtc] = useState('')
+    const [expectedCtc, setExpectedCtc] = useState('')
+
+    useEffect(() => {
+        if (open && profile) {
+            setFirstName(profile.firstName || '')
+            setLastName(profile.lastName || '')
+            setPhone(profile.phone || '')
+            setLocation(profile.location || '')
+            setExperience(profile.experience?.toString() || '')
+            setSkillsString(profile.skills?.join(', ') || '')
+            setCurrentCompany(profile.currentCompany || '')
+            setCurrentRole(profile.currentRole || '')
+            setNoticePeriod(profile.noticePeriod || '')
+            setCurrentCtc(profile.currentCtc || '')
+            setExpectedCtc(profile.expectedCtc || '')
+
+            if (!profile.resumeUrl) {
+                setResumeOption('new')
+            }
+        }
+    }, [open, profile])
+
+    const expValue = parseFloat(experience) || 0
+    const isProfileIncomplete = !firstName || !lastName || !phone || !location || !experience || !skillsString ||
+        (expValue > 0 && (!currentCompany || !currentRole || !noticePeriod || !currentCtc || !expectedCtc))
+
     const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
-            // Validate file type
             const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
             if (!validTypes.includes(file.type)) {
                 alert('Please upload a PDF or DOCX file')
                 return
             }
-            // Validate file size (5MB)
             if (file.size > 5 * 1024 * 1024) {
                 alert('File size must be less than 5MB')
                 return
@@ -79,15 +114,58 @@ export default function EnhancedApplicationModal({
         }
     }
 
+    const updateProfile = async (resumeUrl?: string) => {
+        try {
+            const token = localStorage.getItem('token')
+            const skills = skillsString.split(',').map(s => s.trim()).filter(s => s !== '')
+
+            const res = await fetch('/api/profile/update', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    firstName,
+                    lastName,
+                    phone,
+                    location,
+                    experience: expValue,
+                    skills,
+                    resumeUrl: resumeUrl || profile?.resumeUrl || '',
+                    currentCompany: expValue > 0 ? currentCompany : undefined,
+                    currentRole: expValue > 0 ? currentRole : undefined,
+                    noticePeriod: expValue > 0 ? noticePeriod : undefined,
+                    currentCtc: expValue > 0 ? currentCtc : undefined,
+                    expectedCtc: expValue > 0 ? expectedCtc : undefined,
+                }),
+            })
+
+            if (!res.ok) {
+                const data = await res.json()
+                throw new Error(data.error || 'Failed to update profile')
+            }
+        } catch (error: any) {
+            console.error('Profile update failed:', error)
+            throw error
+        }
+    }
+
     const handleSubmit = async () => {
+        // Validate Mandatory Fields
+        if (isProfileIncomplete) {
+            alert('Please fill in all mandatory profile details.')
+            return
+        }
+
         // Validate resume
-        let resumeUrl = ''
+        let finalResumeUrl = ''
         if (resumeOption === 'existing') {
             if (!profile?.resumeUrl) {
                 alert('No existing resume found. Please upload a new resume.')
                 return
             }
-            resumeUrl = profile.resumeUrl
+            finalResumeUrl = profile.resumeUrl
         } else {
             if (!resumeFile) {
                 alert('Please select a resume file to upload')
@@ -97,15 +175,18 @@ export default function EnhancedApplicationModal({
             if (!uploadedUrl) {
                 return // Upload failed
             }
-            resumeUrl = uploadedUrl
+            finalResumeUrl = uploadedUrl
         }
 
         setSubmitting(true)
         try {
-            await onSubmit({ coverLetter, resumeUrl })
+            // Check if profile needs updating (simplified: always update if we have new values)
+            await updateProfile(finalResumeUrl)
+
+            await onSubmit({ coverLetter, resumeUrl: finalResumeUrl })
             setSuccess(true)
-        } catch (error) {
-            alert('Failed to submit application')
+        } catch (error: any) {
+            alert(error.message || 'Failed to submit application')
         } finally {
             setSubmitting(false)
         }
@@ -119,7 +200,7 @@ export default function EnhancedApplicationModal({
                         <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
                         <h3 className="text-2xl font-bold mb-2">Application Submitted!</h3>
                         <p className="text-gray-600 mb-4">
-                            Your application has been successfully submitted. Good luck!
+                            Your application has been successfully submitted and your profile has been updated. Good luck!
                         </p>
                         <Button onClick={onClose}>Close</Button>
                     </div>
@@ -136,63 +217,155 @@ export default function EnhancedApplicationModal({
                 </DialogHeader>
 
                 <div className="space-y-6">
-                    {/* Profile Summary */}
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                        <div className="flex items-center justify-between mb-3">
-                            <h3 className="font-semibold text-lg">Your Profile</h3>
-                            <Link href="/dashboard/candidate/profile">
-                                <Button variant="outline" size="sm">
-                                    Edit Profile
-                                </Button>
-                            </Link>
+                    {/* Mandatory Profile Fields (if missing) */}
+                    <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg space-y-4">
+                        <div className="flex items-center gap-2 text-blue-800 mb-1">
+                            <Info className="w-5 h-5" />
+                            <h3 className="font-semibold">Complete Your Profile</h3>
+                        </div>
+                        <p className="text-sm text-blue-600">
+                            Please ensure your core profile details are correct. These will be saved to your profile.
+                        </p>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="firstName">First Name *</Label>
+                                <Input
+                                    id="firstName"
+                                    value={firstName}
+                                    onChange={(e) => setFirstName(e.target.value)}
+                                    placeholder="John"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="lastName">Last Name *</Label>
+                                <Input
+                                    id="lastName"
+                                    value={lastName}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                    placeholder="Doe"
+                                    required
+                                />
+                            </div>
                         </div>
 
-                        {profile ? (
-                            <div className="space-y-2 text-sm">
-                                <div className="flex items-center gap-2">
-                                    <User className="w-4 h-4 text-gray-500" />
-                                    <span className="font-medium">{profile.fullName || 'Not provided'}</span>
-                                </div>
-                                {profile.location && (
-                                    <div className="flex items-center gap-2">
-                                        <MapPin className="w-4 h-4 text-gray-500" />
-                                        <span>{profile.location}</span>
-                                    </div>
-                                )}
-                                {profile.experience !== undefined && (
-                                    <div className="flex items-center gap-2">
-                                        <Briefcase className="w-4 h-4 text-gray-500" />
-                                        <span>{profile.experience} years experience</span>
-                                    </div>
-                                )}
-                                {profile.skills && profile.skills.length > 0 && (
-                                    <div className="flex flex-wrap gap-1 mt-2">
-                                        {profile.skills.slice(0, 5).map((skill: string) => (
-                                            <Badge key={skill} variant="secondary" className="text-xs">
-                                                {skill}
-                                            </Badge>
-                                        ))}
-                                        {profile.skills.length > 5 && (
-                                            <Badge variant="secondary" className="text-xs">
-                                                +{profile.skills.length - 5} more
-                                            </Badge>
-                                        )}
-                                    </div>
-                                )}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="phone">Phone Number *</Label>
+                                <Input
+                                    id="phone"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    placeholder="+1 234 567 890"
+                                    required
+                                />
                             </div>
-                        ) : (
-                            <p className="text-sm text-gray-500">
-                                Please complete your profile before applying
-                            </p>
+                            <div className="space-y-2">
+                                <Label htmlFor="location">Location *</Label>
+                                <Input
+                                    id="location"
+                                    value={location}
+                                    onChange={(e) => setLocation(e.target.value)}
+                                    placeholder="City, Country"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="experience">Years of Experience *</Label>
+                                <Input
+                                    id="experience"
+                                    type="number"
+                                    step="0.5"
+                                    value={experience}
+                                    onChange={(e) => setExperience(e.target.value)}
+                                    placeholder="2.5"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="skillsString">Skills (comma separated) *</Label>
+                                <Input
+                                    id="skillsString"
+                                    value={skillsString}
+                                    onChange={(e) => setSkillsString(e.target.value)}
+                                    placeholder="React, Next.js, TypeScript"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        {expValue > 0 && (
+                            <>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="currentCompany">Current Company *</Label>
+                                        <Input
+                                            id="currentCompany"
+                                            value={currentCompany}
+                                            onChange={(e) => setCurrentCompany(e.target.value)}
+                                            placeholder="Google"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="currentRole">Current Role *</Label>
+                                        <Input
+                                            id="currentRole"
+                                            value={currentRole}
+                                            onChange={(e) => setCurrentRole(e.target.value)}
+                                            placeholder="Software Engineer"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="noticePeriod">Notice Period *</Label>
+                                        <Input
+                                            id="noticePeriod"
+                                            value={noticePeriod}
+                                            onChange={(e) => setNoticePeriod(e.target.value)}
+                                            placeholder="30 Days"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="currentCtc">Current CTC *</Label>
+                                        <Input
+                                            id="currentCtc"
+                                            value={currentCtc}
+                                            onChange={(e) => setCurrentCtc(e.target.value)}
+                                            placeholder="12 LPA"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="expectedCtc">Expected CTC *</Label>
+                                        <Input
+                                            id="expectedCtc"
+                                            value={expectedCtc}
+                                            onChange={(e) => setExpectedCtc(e.target.value)}
+                                            placeholder="18 LPA"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </>
                         )}
                     </div>
 
                     {/* Resume Selection */}
                     <div className="space-y-3">
-                        <Label>Resume *</Label>
+                        <Label className="text-base font-semibold">Resume *</Label>
                         <RadioGroup value={resumeOption} onValueChange={(value: any) => setResumeOption(value)}>
                             {profile?.resumeUrl && (
-                                <div className="flex items-center space-x-2 p-3 border rounded-md">
+                                <div className="flex items-center space-x-2 p-3 border rounded-md bg-white">
                                     <RadioGroupItem value="existing" id="existing" />
                                     <label htmlFor="existing" className="flex-1 cursor-pointer">
                                         <div className="flex items-center gap-2">
@@ -212,7 +385,7 @@ export default function EnhancedApplicationModal({
                                 </div>
                             )}
 
-                            <div className="flex items-start space-x-2 p-3 border rounded-md">
+                            <div className="flex items-start space-x-2 p-3 border rounded-md bg-white">
                                 <RadioGroupItem value="new" id="new" className="mt-1" />
                                 <label htmlFor="new" className="flex-1 cursor-pointer">
                                     <div className="flex items-center gap-2 mb-2">
@@ -253,10 +426,10 @@ export default function EnhancedApplicationModal({
 
                     {/* Cover Letter */}
                     <div className="space-y-2">
-                        <Label htmlFor="coverLetter">Cover Letter (Optional)</Label>
+                        <Label htmlFor="coverLetter" className="text-base font-semibold">Cover Letter (Optional)</Label>
                         <Textarea
                             id="coverLetter"
-                            rows={6}
+                            rows={4}
                             placeholder="Tell us why you're a great fit for this position..."
                             value={coverLetter}
                             onChange={(e) => setCoverLetter(e.target.value)}
@@ -264,15 +437,16 @@ export default function EnhancedApplicationModal({
                     </div>
 
                     {/* Submit Button */}
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 pt-4 border-t">
                         <Button
                             onClick={handleSubmit}
                             disabled={submitting || uploading || !profile}
                             className="flex-1"
+                            size="lg"
                         >
                             {uploading ? 'Uploading Resume...' : submitting ? 'Submitting...' : 'Submit Application'}
                         </Button>
-                        <Button variant="outline" onClick={onClose} disabled={submitting || uploading}>
+                        <Button variant="outline" onClick={onClose} disabled={submitting || uploading} size="lg">
                             Cancel
                         </Button>
                     </div>

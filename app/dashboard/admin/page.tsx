@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Users, Briefcase, FileText, UserCheck, LogOut } from 'lucide-react'
+import { Users, Briefcase, FileText, UserCheck, LogOut, Settings } from 'lucide-react'
 
 export default function AdminDashboard() {
     const router = useRouter()
@@ -178,6 +178,22 @@ export default function AdminDashboard() {
                             <FileText className="w-12 h-12 text-primary-dark mb-4" />
                             <CardTitle>View All Applicants</CardTitle>
                             <p className="text-gray-600">System-wide applicant management</p>
+                        </CardHeader>
+                    </Card>
+
+                    <Card className="card-hover cursor-pointer" onClick={() => router.push('/dashboard/admin/candidates')}>
+                        <CardHeader>
+                            <Users className="w-12 h-12 text-primary-dark mb-4" />
+                            <CardTitle>Manage Candidates</CardTitle>
+                            <p className="text-gray-600">View and export all candidate profile data</p>
+                        </CardHeader>
+                    </Card>
+
+                    <Card className="card-hover cursor-pointer" onClick={() => router.push('/dashboard/admin/settings')}>
+                        <CardHeader>
+                            <Settings className="w-12 h-12 text-primary-dark mb-4" />
+                            <CardTitle>Account Settings</CardTitle>
+                            <p className="text-gray-600">Update admin email and change password</p>
                         </CardHeader>
                     </Card>
                 </div>

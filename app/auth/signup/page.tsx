@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,8 +14,11 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect')
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -45,9 +48,11 @@ export default function SignupPage() {
         throw new Error(data.error || 'Signup failed')
       }
 
-      router.push(
-        '/auth/login?message=Account created successfully. Please login.'
-      )
+      const loginUrl = redirectTo
+        ? `/auth/login?message=Account created successfully. Please login.&redirect=${encodeURIComponent(redirectTo)}`
+        : '/auth/login?message=Account created successfully. Please login.'
+
+      router.push(loginUrl)
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -178,7 +183,7 @@ export default function SignupPage() {
             <div className="text-center text-sm text-gray-600">
               Already have an account?{' '}
               <Link
-                href="/auth/login"
+                href={redirectTo ? `/auth/login?redirect=${encodeURIComponent(redirectTo)}` : "/auth/login"}
                 className="text-primary-dark font-semibold hover:underline"
               >
                 Login
@@ -188,5 +193,13 @@ export default function SignupPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen gradient-primary flex items-center justify-center p-4 text-white">Loading...</div>}>
+      <SignupForm />
+    </Suspense>
   )
 }

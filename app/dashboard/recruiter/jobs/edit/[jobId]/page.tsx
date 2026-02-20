@@ -27,7 +27,7 @@ export default function EditJobPage() {
         experience: '',
         skills: [] as string[],
         salary: '',
-        isRemote: false,
+        workMode: 'ON_SITE',
         stages: 1,
         deadline: '',
     })
@@ -53,7 +53,7 @@ export default function EditJobPage() {
                 experience: job.experience || '',
                 skills: job.skills || [],
                 salary: job.salary || '',
-                isRemote: job.isRemote || false,
+                workMode: job.workMode || 'ON_SITE',
                 stages: job.stages || 1,
                 deadline: job.deadline ? new Date(job.deadline).toISOString().split('T')[0] : '',
             })
@@ -261,15 +261,18 @@ export default function EditJobPage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="isRemote"
-                                    checked={formData.isRemote}
-                                    onCheckedChange={(checked) => setFormData({ ...formData, isRemote: checked as boolean })}
-                                />
-                                <Label htmlFor="isRemote" className="cursor-pointer">
-                                    This is a remote position
-                                </Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="workMode">Work Type *</Label>
+                                <Select value={formData.workMode} onValueChange={(value) => setFormData({ ...formData, workMode: value })}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ON_SITE">On-site</SelectItem>
+                                        <SelectItem value="REMOTE">Remote</SelectItem>
+                                        <SelectItem value="HYBRID">Hybrid</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             <div className="flex gap-4">

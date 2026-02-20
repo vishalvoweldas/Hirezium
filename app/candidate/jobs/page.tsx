@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Search,
   MapPin,
@@ -181,10 +182,22 @@ function CandidateJobsContent() {
                               <Briefcase className="w-4 h-4" />
                               <span>{job.jobType}</span>
                             </div>
+                            {job.workMode === 'REMOTE' && (
+                              <Badge className="bg-green-100 text-green-800 border-none">Remote</Badge>
+                            )}
+                            {job.workMode === 'ON_SITE' && (
+                              <Badge variant="outline" className="text-blue-700 border-blue-200">On-site</Badge>
+                            )}
+                            {job.workMode === 'HYBRID' && (
+                              <Badge className="bg-purple-100 text-purple-800 border-none">Hybrid</Badge>
+                            )}
                             {job.salary && (
-                              <span className="font-semibold text-green-600">
-                                {job.salary}
-                              </span>
+                              <div className="flex items-center gap-2 ml-auto pr-4">
+                                <span className="text-xs text-gray-400 uppercase">CTC</span>
+                                <span className="text-base font-bold text-green-600">
+                                  {job.salary}
+                                </span>
+                              </div>
                             )}
                           </div>
                         </div>

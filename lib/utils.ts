@@ -44,7 +44,8 @@ export function calculateProfileCompletion(profile: any): number {
         'location',
         'experience',
         'skills',
-        'bio'
+        'bio',
+        'currentRole'
     ]
 
     // Check required fields (must all be filled)

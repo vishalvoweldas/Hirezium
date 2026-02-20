@@ -32,7 +32,8 @@ export const jobSchema = z.object({
     experience: z.string().min(1, 'Experience requirement is required'),
     skills: z.array(z.string()).min(1, 'At least one skill is required'),
     salary: z.string().optional(),
-    isRemote: z.boolean().default(false),
+    isRemote: z.boolean().default(false), // Still keeping it for backward compatibility or migration
+    workMode: z.enum(['ON_SITE', 'REMOTE', 'HYBRID']).default('ON_SITE'),
     companyLogo: z.string().url().optional().or(z.literal('')),
     stages: z.number().int().min(1).max(10).default(1),
     deadline: z.string().optional(),
@@ -56,6 +57,7 @@ export const profileUpdateSchema = z.object({
     resumeUrl: z.string().url('Invalid resume URL').min(1, 'Resume is required').or(z.literal('')),
     resumePublicId: z.string().optional(),
     currentCompany: z.string().optional(),
+    currentRole: z.string().optional(),
     noticePeriod: z.string().optional(),
     currentCtc: z.string().optional(),
     expectedCtc: z.string().optional(),
@@ -66,6 +68,13 @@ export const profileUpdateSchema = z.object({
                 code: z.ZodIssueCode.custom,
                 message: "Current Company is required for experienced candidates",
                 path: ["currentCompany"]
+            });
+        }
+        if (!data.currentRole) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Current Role is required for experienced candidates",
+                path: ["currentRole"]
             });
         }
         if (!data.noticePeriod) {

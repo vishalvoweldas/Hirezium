@@ -39,6 +39,7 @@ async function updateProfileHandler(request: AuthenticatedRequest) {
                     resumeUrl: validatedData.resumeUrl,
                     resumePublicId: validatedData.resumePublicId,
                     currentCompany: validatedData.currentCompany,
+                    currentRole: validatedData.currentRole,
                     noticePeriod: validatedData.noticePeriod,
                     currentCtc: validatedData.currentCtc,
                     expectedCtc: validatedData.expectedCtc,

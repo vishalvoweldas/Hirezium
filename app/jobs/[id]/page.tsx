@@ -121,7 +121,7 @@ export default function JobDetailsPage() {
         }
     }
 
-    const handleSubmitApplication = async () => {
+    const handleSubmitApplication = async (data: { coverLetter: string; resumeUrl: string }) => {
         setApplying(true)
         try {
             const token = localStorage.getItem('token')
@@ -133,22 +133,26 @@ export default function JobDetailsPage() {
                 },
                 body: JSON.stringify({
                     jobId: params.id,
-                    coverLetter,
+                    coverLetter: data.coverLetter,
+                    resumeUrl: data.resumeUrl,
                 }),
             })
 
             if (res.ok) {
                 setApplied(true)
+                // Refresh profile since it was updated in the modal
+                fetchProfile()
                 setTimeout(() => {
                     setShowApplyModal(false)
                     router.push('/dashboard/candidate/applied')
                 }, 2000)
             } else {
-                const data = await res.json()
-                alert(data.error || 'Failed to submit application')
+                const responseData = await res.json()
+                throw new Error(responseData.error || 'Failed to submit application')
             }
-        } catch (error) {
-            alert('Failed to submit application')
+        } catch (error: any) {
+            alert(error.message || 'Failed to submit application')
+            throw error // Re-throw to inform the modal
         } finally {
             setApplying(false)
         }
@@ -237,9 +241,17 @@ export default function JobDetailsPage() {
                                     <CardTitle className="text-3xl mb-2">{job.title}</CardTitle>
 
                                 </div>
-                                {job.isRemote && (
-                                    <Badge className="bg-green-100 text-green-800">Remote</Badge>
-                                )}
+                                <div className="flex gap-2">
+                                    {job.workMode === 'REMOTE' && (
+                                        <Badge className="bg-green-100 text-green-800">Remote</Badge>
+                                    )}
+                                    {job.workMode === 'ON_SITE' && (
+                                        <Badge className="bg-blue-100 text-blue-800">On-site</Badge>
+                                    )}
+                                    {job.workMode === 'HYBRID' && (
+                                        <Badge className="bg-purple-100 text-purple-800">Hybrid</Badge>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="grid md:grid-cols-2 gap-4 mt-4">

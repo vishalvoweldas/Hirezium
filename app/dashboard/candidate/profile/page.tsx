@@ -29,6 +29,7 @@ export default function CandidateProfile() {
         resumeUrl: '',
         resumePublicId: '',
         currentCompany: '',
+        currentRole: '',
         noticePeriod: '',
         currentCtc: '',
         expectedCtc: '',
@@ -59,6 +60,7 @@ export default function CandidateProfile() {
                     resumeUrl: data.user.profile.resumeUrl || '',
                     resumePublicId: data.user.profile.resumePublicId || '',
                     currentCompany: data.user.profile.currentCompany || '',
+                    currentRole: data.user.profile.currentRole || '',
                     noticePeriod: data.user.profile.noticePeriod || '',
                     currentCtc: data.user.profile.currentCtc || '',
                     expectedCtc: data.user.profile.expectedCtc || '',
@@ -143,7 +145,7 @@ export default function CandidateProfile() {
         // Conditional mandatory fields check
         const isExperienced = Number(formData.experience) > 0
         if (isExperienced) {
-            if (!formData.currentCompany || !formData.noticePeriod || !formData.currentCtc || !formData.expectedCtc) {
+            if (!formData.currentCompany || !formData.currentRole || !formData.noticePeriod || !formData.currentCtc || !formData.expectedCtc) {
                 alert('All company details are mandatory for experienced candidates')
                 return
             }
@@ -332,6 +334,17 @@ export default function CandidateProfile() {
                                                 placeholder="Company Name"
                                             />
                                         </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="currentRole">Current Role <span className="text-red-500">*</span></Label>
+                                            <Input
+                                                id="currentRole"
+                                                value={formData.currentRole}
+                                                onChange={(e) => setFormData({ ...formData, currentRole: e.target.value })}
+                                                placeholder="Software Engineer"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="noticePeriod">Notice Period <span className="text-red-500">*</span></Label>
                                             <Input

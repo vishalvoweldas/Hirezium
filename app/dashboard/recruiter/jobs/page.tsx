@@ -100,6 +100,15 @@ export default function ManageJobsPage() {
                                                 {job.isActive ? 'Active' : 'Closed'}
                                             </Badge>
                                             <Badge variant="outline">{job.applicantCount || 0} Applicants</Badge>
+                                            {job.workMode === 'REMOTE' && (
+                                                <Badge className="bg-green-100 text-green-800 border-none">Remote</Badge>
+                                            )}
+                                            {job.workMode === 'ON_SITE' && (
+                                                <Badge variant="outline" className="text-blue-700 border-blue-200">On-site</Badge>
+                                            )}
+                                            {job.workMode === 'HYBRID' && (
+                                                <Badge className="bg-purple-100 text-purple-800 border-none">Hybrid</Badge>
+                                            )}
                                         </div>
                                     </div>
                                 </CardHeader>

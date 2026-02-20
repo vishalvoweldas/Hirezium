@@ -12,6 +12,8 @@ import {
     DialogHeader,
     DialogTitle
 } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { getStatusColor } from '@/lib/utils'
 import ResumePreviewModal from '@/components/ResumePreviewModal'
 import { Download, X } from 'lucide-react'
@@ -25,6 +27,8 @@ export default function ApplicantsPage() {
         url: null,
         publicId: null
     })
+    const [fromDate, setFromDate] = useState<string>('')
+    const [toDate, setToDate] = useState<string>('')
 
     useEffect(() => {
         fetchJobs()
@@ -78,25 +82,43 @@ export default function ApplicantsPage() {
 
     const handleExport = async (jobId: string, format: string) => {
         const token = localStorage.getItem('token')
+        let exportUrl = `/api/export/applicants/${jobId}?format=${format}&includeFull=true`
+        if (fromDate) exportUrl += `&fromDate=${fromDate}`
+        if (toDate) exportUrl += `&toDate=${toDate}`
+
         try {
-            const res = await fetch(`/api/export/applicants/${jobId}?format=${format}&includeFull=true`, {
+            const res = await fetch(exportUrl, {
                 headers: { Authorization: `Bearer ${token}` },
             })
 
             const blob = await res.blob()
-            const url = window.URL.createObjectURL(blob)
+            const blobUrl = window.URL.createObjectURL(blob)
             const a = document.createElement('a')
-            a.href = url
+            a.href = blobUrl
             a.download = `applicants.${format === 'pdf' ? 'pdf' : 'xlsx'}`
             a.click()
+            window.URL.revokeObjectURL(blobUrl)
         } catch (error) {
             alert('Failed to export data')
         }
     }
 
-    const filteredApplications = selectedJob === 'all'
-        ? applications
-        : applications.filter(app => app.jobId === selectedJob)
+    const filteredApplications = applications.filter(app => {
+        const matchesJob = selectedJob === 'all' || app.jobId === selectedJob
+        const appDate = new Date(app.appliedAt)
+
+        let matchesDate = true
+        if (fromDate) {
+            matchesDate = matchesDate && appDate >= new Date(fromDate)
+        }
+        if (toDate) {
+            const endToDate = new Date(toDate)
+            endToDate.setHours(23, 59, 59, 999)
+            matchesDate = matchesDate && appDate <= endToDate
+        }
+
+        return matchesJob && matchesDate
+    })
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -131,19 +153,56 @@ export default function ApplicantsPage() {
                     )}
                 </div>
 
-                <div className="mb-6">
-                    <Label className="mb-2 block">Filter by Job</Label>
-                    <Select value={selectedJob} onValueChange={setSelectedJob}>
-                        <SelectTrigger className="w-64">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Jobs</SelectItem>
-                            {jobs.map(job => (
-                                <SelectItem key={job.id} value={job.id}>{job.title}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                <div className="flex flex-wrap gap-4 mb-6 items-end">
+                    <div>
+                        <Label className="mb-2 block">Filter by Job</Label>
+                        <Select value={selectedJob} onValueChange={setSelectedJob}>
+                            <SelectTrigger className="w-64">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Jobs</SelectItem>
+                                {jobs.map(job => (
+                                    <SelectItem key={job.id} value={job.id}>{job.title}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div>
+                        <Label className="mb-2 block">From Date</Label>
+                        <Input
+                            type="date"
+                            value={fromDate}
+                            onChange={(e) => setFromDate(e.target.value)}
+                            className="w-44"
+                        />
+                    </div>
+
+                    <div>
+                        <Label className="mb-2 block">To Date</Label>
+                        <Input
+                            type="date"
+                            value={toDate}
+                            onChange={(e) => setToDate(e.target.value)}
+                            className="w-44"
+                        />
+                    </div>
+
+                    {(fromDate || toDate || selectedJob !== 'all') && (
+                        <Button
+                            variant="ghost"
+                            onClick={() => {
+                                setFromDate('')
+                                setToDate('')
+                                setSelectedJob('all')
+                            }}
+                            className="text-gray-500"
+                        >
+                            <X className="w-4 h-4 mr-2" />
+                            Clear Filters
+                        </Button>
+                    )}
                 </div>
 
                 {loading ? (
@@ -214,6 +273,3 @@ export default function ApplicantsPage() {
     )
 }
 
-function Label({ children, className }: { children: React.ReactNode; className?: string }) {
-    return <label className={className}>{children}</label>
-}

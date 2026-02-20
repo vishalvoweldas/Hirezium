@@ -220,13 +220,18 @@ export default function CandidateHomePage() {
                                             <p className="text-sm text-on-gradient-muted">{job.location}</p>
                                         </CardHeader>
                                         <CardContent>
-                                            <div className="flex items-center gap-2 text-sm text-on-gradient-muted mb-2">
-                                                <Briefcase className="w-4 h-4" />
-                                                <span>{job.jobType}</span>
+                                            <div className="flex items-center justify-between text-sm text-on-gradient-muted mb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <Briefcase className="w-4 h-4" />
+                                                    <span>{job.jobType}</span>
+                                                </div>
+                                                {job.salary && (
+                                                    <div className="flex items-center gap-2 pr-4">
+                                                        <span className="text-xs text-on-gradient-muted uppercase">CTC</span>
+                                                        <p className="text-base font-bold text-green-400">{job.salary}</p>
+                                                    </div>
+                                                )}
                                             </div>
-                                            {job.salary && (
-                                                <p className="text-sm font-semibold text-green-400">{job.salary}</p>
-                                            )}
                                         </CardContent>
                                     </Card>
                                 ))}

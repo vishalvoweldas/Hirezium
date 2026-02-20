@@ -1,15 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-export default function RecruiterRegisterPage() {
+function RecruiterRegisterForm() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const redirectTo = searchParams.get('redirect')
+
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -60,7 +63,7 @@ export default function RecruiterRegisterPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Link href="/auth/login">
+                        <Link href={redirectTo ? `/auth/login?redirect=${encodeURIComponent(redirectTo)}` : "/auth/login"}>
                             <Button className="w-full">Go to Login</Button>
                         </Link>
                     </CardContent>
@@ -182,7 +185,10 @@ export default function RecruiterRegisterPage() {
 
                         <div className="text-center text-sm text-gray-600">
                             Already have an account?{' '}
-                            <Link href="/auth/login" className="text-primary-dark font-semibold hover:underline">
+                            <Link
+                                href={redirectTo ? `/auth/login?redirect=${encodeURIComponent(redirectTo)}` : "/auth/login"}
+                                className="text-primary-dark font-semibold hover:underline"
+                            >
                                 Login
                             </Link>
                         </div>
@@ -190,5 +196,13 @@ export default function RecruiterRegisterPage() {
                 </CardContent>
             </Card>
         </div>
+    )
+}
+
+export default function RecruiterRegisterPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen gradient-primary flex items-center justify-center p-4 text-white">Loading...</div>}>
+            <RecruiterRegisterForm />
+        </Suspense>
     )
 }
