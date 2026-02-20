@@ -10,8 +10,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { MapPin, Briefcase, Clock, DollarSign, Building, CheckCircle } from 'lucide-react'
+import { MapPin, Briefcase, Clock } from 'lucide-react'
 import EnhancedApplicationModal from '@/components/EnhancedApplicationModal'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 export default function JobDetailsPage() {
     const params = useParams()
@@ -233,9 +235,7 @@ export default function JobDetailsPage() {
                             <div className="flex items-start justify-between mb-4">
                                 <div>
                                     <CardTitle className="text-3xl mb-2">{job.title}</CardTitle>
-                                    <p className="text-xl text-primary-dark font-semibold">
-                                        {job.companyName || 'Company'}
-                                    </p>
+
                                 </div>
                                 {job.isRemote && (
                                     <Badge className="bg-green-100 text-green-800">Remote</Badge>
@@ -245,7 +245,13 @@ export default function JobDetailsPage() {
                             <div className="grid md:grid-cols-2 gap-4 mt-4">
                                 <div className="flex items-center text-gray-600">
                                     <MapPin className="w-5 h-5 mr-2" />
-                                    {job.location}
+                                    <div className="flex flex-wrap gap-2">
+                                        {job.location.split(',').map((loc: string, index: number) => (
+                                            <Badge key={index} variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100">
+                                                {loc.trim()}
+                                            </Badge>
+                                        ))}
+                                    </div>
                                 </div>
                                 <div className="flex items-center text-gray-600">
                                     <Briefcase className="w-5 h-5 mr-2" />
@@ -257,7 +263,7 @@ export default function JobDetailsPage() {
                                 </div>
                                 {job.salary && (
                                     <div className="flex items-center text-gray-600">
-                                        <DollarSign className="w-5 h-5 mr-2" />
+                                        <span className="font-semibold text-gray-500 mr-2">CTC</span>
                                         {job.salary}
                                     </div>
                                 )}
@@ -279,7 +285,11 @@ export default function JobDetailsPage() {
                             <CardTitle>Job Description</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-gray-700 whitespace-pre-line">{job.description}</p>
+                            <div className="prose max-w-none text-gray-700 prose-ul:list-disc prose-ol:list-decimal prose-ul:pl-5 prose-ol:pl-5">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {job.description}
+                                </ReactMarkdown>
+                            </div>
                         </CardContent>
                     </Card>
 

@@ -34,7 +34,7 @@ export async function GET(
 
         return NextResponse.json({
             ...job,
-            companyName: job.recruiter.recruiterProfile?.companyName,
+            // companyName: job.recruiter.recruiterProfile?.companyName, // Hidden as per request
             applicantCount: job._count.applications,
         })
     } catch (error) {

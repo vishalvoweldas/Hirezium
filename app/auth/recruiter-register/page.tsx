@@ -107,7 +107,7 @@ export default function RecruiterRegisterPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="email">Work Email</Label>
+                            <Label htmlFor="email">Work Email <span className="text-red-500">*</span></Label>
                             <Input
                                 id="email"
                                 type="email"
@@ -119,7 +119,7 @@ export default function RecruiterRegisterPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
+                            <Label htmlFor="password">Password <span className="text-red-500">*</span></Label>
                             <Input
                                 id="password"
                                 type="password"
@@ -142,24 +142,26 @@ export default function RecruiterRegisterPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="designation">Your Designation (Optional)</Label>
+                            <Label htmlFor="designation">Your Designation <span className="text-red-500">*</span></Label>
                             <Input
                                 id="designation"
                                 type="text"
                                 placeholder="HR Manager"
                                 value={formData.designation}
                                 onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
+                                required
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="phone">Phone (Optional)</Label>
+                            <Label htmlFor="phone">Phone <span className="text-red-500">*</span></Label>
                             <Input
                                 id="phone"
                                 type="tel"
                                 placeholder="+1234567890"
                                 value={formData.phone}
                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                required
                             />
                         </div>
 

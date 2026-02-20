@@ -242,6 +242,7 @@ export default function RecruiterDashboard() {
             </CardHeader>
           </Card>
 
+
           <Card
             className="card-hover cursor-pointer"
             onClick={() => router.push("/dashboard/recruiter/email")}
@@ -251,6 +252,19 @@ export default function RecruiterDashboard() {
               <CardTitle>Email Candidates</CardTitle>
               <p className="text-gray-600">
                 Send bulk emails to candidates via Excel upload
+              </p>
+            </CardHeader>
+          </Card>
+
+          <Card
+            className="card-hover cursor-pointer"
+            onClick={() => router.push("/dashboard/recruiter/profile")}
+          >
+            <CardHeader>
+              <Users className="w-12 h-12 text-teal-600 mb-4" />
+              <CardTitle>Profile Settings</CardTitle>
+              <p className="text-gray-600">
+                Update you profile, change password and email
               </p>
             </CardHeader>
           </Card>

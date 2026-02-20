@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import MarkdownEditor from '@/components/MarkdownEditor'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
@@ -109,12 +110,12 @@ export default function PostJobPage() {
 
                             <div className="space-y-2">
                                 <Label htmlFor="description">Job Description *</Label>
-                                <Textarea
+                                <MarkdownEditor
                                     id="description"
-                                    rows={6}
+                                    rows={10}
                                     placeholder="Describe the role, responsibilities, and requirements..."
                                     value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    onChange={(value) => setFormData({ ...formData, description: value })}
                                     required
                                 />
                             </div>
