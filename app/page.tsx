@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Search, Briefcase, Users, TrendingUp, Target, BarChart3, Zap } from 'lucide-react'
-import TestimonialsSection from '@/components/TestimonialsSection'
+// import TestimonialsSection from '@/components/TestimonialsSection'
 import PlacementAnalytics from '@/components/PlacementAnalytics'
 
 export default function HomePage() {
@@ -186,7 +186,7 @@ export default function HomePage() {
             <PlacementAnalytics />
 
             {/* Testimonials Section */}
-            <TestimonialsSection />
+            {/* <TestimonialsSection /> */}
 
             {/* CTA Section */}
             <section className="text-white py-16">

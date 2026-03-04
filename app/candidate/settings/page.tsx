@@ -1,18 +1,23 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Settings as SettingsIcon, User, Bell, Lock, Trash2 } from 'lucide-react'
+import { Settings as SettingsIcon, User, Bell, Lock, Trash2, AlertTriangle, X } from 'lucide-react'
 
 export default function CandidateSettingsPage() {
+    const router = useRouter()
     const [emailNotifications, setEmailNotifications] = useState(true)
     const [jobAlerts, setJobAlerts] = useState(true)
     const [currentPassword, setCurrentPassword] = useState('')
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+    const [deleteConfirmText, setDeleteConfirmText] = useState('')
+    const [isDeleting, setIsDeleting] = useState(false)
 
     const handlePasswordChange = async () => {
         if (newPassword !== confirmPassword) {
@@ -22,6 +27,35 @@ export default function CandidateSettingsPage() {
 
         // TODO: Implement password change API call
         alert('Password change functionality coming soon!')
+    }
+
+    const handleDeleteAccount = async () => {
+        if (deleteConfirmText !== 'DELETE') return
+
+        setIsDeleting(true)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/auth/delete-account', {
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+
+            if (res.ok) {
+                localStorage.removeItem('token')
+                localStorage.removeItem('user')
+                router.push('/')
+            } else {
+                const data = await res.json()
+                alert(data.error || 'Failed to delete account. Please try again.')
+            }
+        } catch (error) {
+            console.error('Delete account error:', error)
+            alert('Something went wrong. Please try again.')
+        } finally {
+            setIsDeleting(false)
+        }
     }
 
     return (
@@ -157,13 +191,74 @@ export default function CandidateSettingsPage() {
                             <p className="text-sm text-secondary-dark mb-4">
                                 Once you delete your account, there is no going back. Please be certain.
                             </p>
-                            <Button variant="destructive">
+                            <Button
+                                variant="destructive"
+                                onClick={() => setShowDeleteDialog(true)}
+                            >
                                 Delete Account
                             </Button>
                         </CardContent>
                     </Card>
                 </div>
             </div>
+
+            {/* Delete Confirmation Dialog */}
+            {showDeleteDialog && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2 text-red-600">
+                                <AlertTriangle className="w-5 h-5" />
+                                <h3 className="text-lg font-semibold">Delete Account</h3>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setShowDeleteDialog(false)
+                                    setDeleteConfirmText('')
+                                }}
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="mb-4">
+                            <p className="text-sm text-gray-600 mb-3">
+                                This action <strong>cannot be undone</strong>. This will permanently delete your
+                                account, profile, applications, and all associated data.
+                            </p>
+                            <p className="text-sm text-gray-600 mb-2">
+                                Please type <strong className="text-red-600">DELETE</strong> to confirm.
+                            </p>
+                            <Input
+                                value={deleteConfirmText}
+                                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                                placeholder="Type DELETE to confirm"
+                                className="border-red-200 focus:border-red-400"
+                            />
+                        </div>
+
+                        <div className="flex gap-3 justify-end">
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setShowDeleteDialog(false)
+                                    setDeleteConfirmText('')
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDeleteAccount}
+                                disabled={deleteConfirmText !== 'DELETE' || isDeleting}
+                            >
+                                {isDeleting ? 'Deleting...' : 'Delete My Account'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
