@@ -1,298 +1,173 @@
 # Hirezium - Modern SaaS Job Portal
 
-A production-ready job portal SaaS with 3-layer authentication (Admin, Recruiter, Candidate), built with Next.js, Prisma, and PostgreSQL.
+A production-ready job portal SaaS featuring a comprehensive multi-stage recruitment workflow, 3-layer authentication (Admin, Recruiter, Candidate), and built with Next.js 15, Prisma, and PostgreSQL.
 
-## 🚀 Features
+## 🚀 Key Features
 
-- **3-Layer Authentication**: Admin, Recruiter (with approval), and Candidate roles
-- **Job Management**: Post, edit, delete, and manage jobs
-- **Application Tracking**: Apply to jobs, track status, manage applicants
-- **Data Export**: Export applicant data in Excel/PDF with custom filters
-- **Responsive Design**: Mobile-first with bottom navigation and sticky CTAs
-- **Modern UI**: Gradient theme (#124A59 → #08262C) with glassmorphism effects
-- **Bulk Email**: Send personalized emails to candidates via Excel/CSV upload
-- **File Upload**: Resume uploads via Cloudinary
-- **Role-Based Access**: Protected routes and API endpoints
+- **3-Layer Authentication**: Secure access for Admin, Recruiter (requires admin approval), and Candidate roles.
+- **Multi-Stage Recruitment**: Define and track candidates through 1-10 customizable interview rounds.
+- **Job Management**: Advanced tools for recruiters to post, edit, and manage job listings.
+- **Application Tracking System (ATS)**: Integrated candidate tracking with visual progress indicators.
+- **Data Export & Analytics**: Export applicant details to Excel/PDF and visualize placement trends.
+- **Bulk Communication**: Personalized email campaigns via Excel/CSV uploads with dynamic placeholders.
+- **Modern UI/UX**: Premium gradient theme (#124A59 → #08262C), glassmorphism effects, and fully responsive design.
+- **Automated Notifications**: Real-time email alerts for applications, stage updates, and selection.
 
-## 📋 Prerequisites
+## � User Roles & Workflow
+
+### 1. Admin
+- **Role**: System overseer.
+- **Responsibilities**: Approving new Recruiter registrations, managing system-wide settings, and viewing high-level analytics.
+- **Workflow**: Log in -> Review pending Recruiters -> Approve/Reject -> Monitor platform activity.
+
+### 2. Recruiter
+- **Role**: Talent seeker.
+- **Responsibilities**: Posting jobs, defining interview stages (1-10 rounds), managing applicants, and exporting data.
+- **Workflow**: Register -> Wait for Approval -> Post Job -> Review Applications -> Move Candidates through Stages -> Select/Reject.
+
+### 3. Candidate
+- **Role**: Job seeker.
+- **Responsibilities**: Building a profile, searching for jobs, and applying with resumes.
+- **Workflow**: Sign up -> Complete Profile -> Search Jobs -> Apply -> Track Status in Real-time.
+
+---
+
+## �📋 Prerequisites
 
 - Node.js 18+ and npm
-- PostgreSQL database (Neon or Supabase recommended for free hosting)
-- Cloudinary account for file uploads
+- PostgreSQL database (Neon, Supabase, or local instance)
+- Cloudinary account for secure file storage
+- Gmail or SMTP service for automated emails
 
-## 🛠️ Installation
+## 🛠️ Installation & Setup
 
-### 1. Clone and Install Dependencies
+### 1. Clone the project and install dependencies
 
 ```bash
-cd "d:\VISHAL STUFF\Hirevo"
+cd hirezium
 npm install
 ```
 
-### 2. Set Up Environment Variables
+### 2. Configure Environment Variables
 
-Create a `.env` file in the root directory:
+Create a `.env` file in the root directory and populate it with your credentials:
 
 ```env
-# Database (Neon PostgreSQL)
-DATABASE_URL="postgresql://user:password@host:5432/hireflow?sslmode=require"
+# Database Connection
+DATABASE_URL="your-postgresql-connection-string"
 
-# JWT Secret (generate a random string)
-JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
+# Authentication
+JWT_SECRET="your-secure-jwt-secret"
 
-# Cloudinary Configuration
+# Cloudinary (File Storage)
 CLOUDINARY_CLOUD_NAME="your-cloud-name"
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
 CLOUDINARY_API_KEY="your-api-key"
 CLOUDINARY_API_SECRET="your-api-secret"
 
-# Email Configuration
+# Email (SMTP)
 EMAIL_HOST="smtp.gmail.com"
 EMAIL_PORT="587"
 EMAIL_USER="your-email@gmail.com"
 EMAIL_PASSWORD="your-app-password"
-EMAIL_FROM="Hirezium <noreply@hirezium.com>"
+EMAIL_FROM="Hirezium <noreply@yourdomain.com>"
 
-# App URL
+# App Configuration
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
-### 3. Set Up Database
+### 3. Initialize Database
 
-#### Option A: Neon (Recommended)
-
-1. Go to [neon.tech](https://neon.tech) and create a free account
-2. Create a new project
-3. Copy the connection string and add it to `.env` as `DATABASE_URL`
-
-#### Option B: Supabase
-
-1. Go to [supabase.com](https://supabase.com) and create a free account
-2. Create a new project
-3. Go to Settings → Database and copy the connection string
-4. Add it to `.env` as `DATABASE_URL`
-
-### 4. Set Up Cloudinary
-
-1. Go to [cloudinary.com](https://cloudinary.com) and create a free account
-2. From your dashboard, copy:
-   - Cloud Name
-   - API Key
-   - API Secret
-3. Add them to your `.env` file
-
-### 5. Run Database Migrations
+Run the following commands to set up your schema and generate the client:
 
 ```bash
 npx prisma generate
 npx prisma db push
 ```
 
-### 6. Seed the Database
+### 4. Seed Initial Data (Optional)
+
+To populate the database with sample jobs and default users for testing:
 
 ```bash
 npx tsx prisma/seed.ts
 ```
 
-This will create:
+> [!NOTE]
+> Default credentials for seeded users are outputted to the console after the script runs.
 
-- **Admin**: hirezium.notifications@gmail.com / hirezium@123
-- **Recruiter**: voweldasveeresh@gmail.com / veeresh@21
-- **Candidate**: john.doe@example.com / candidate123
-- Sample jobs
-
-### 7. Run Development Server
+### 5. Start Development Server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Visit [http://localhost:3000](http://localhost:3000) to view the portal.
 
-## 🚢 Deployment to Vercel
-
-### 1. Push to GitHub
-
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/yourusername/hirezium.git
-git push -u origin main
-```
-
-### 2. Deploy to Vercel
-
-1. Go to [vercel.com](https://vercel.com) and sign in with GitHub
-2. Click "New Project" and import your repository
-3. Configure environment variables:
-   - Add all variables from your `.env` file
-   - Update `NEXT_PUBLIC_APP_URL` to your Vercel domain
-4. Click "Deploy"
-
-### 3. Run Migrations in Production
-
-After deployment, run migrations:
-
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Link to your project
-vercel link
-
-# Run migrations
-vercel env pull .env.production
-npx prisma db push
-npx tsx prisma/seed.ts
-```
-
-## 📱 Usage
-
-### Admin Dashboard
-
-- Login with admin credentials
-- Approve/reject recruiter registrations
-- Manage all jobs and applicants
-- View system-wide analytics
-
-### Recruiter Dashboard
-
-- Register and wait for admin approval
-- Post and manage jobs
-- View applicants for your jobs
-- Export applicant data (Excel/PDF)
-- Update application status
-
-### Candidate Portal
-
-- Sign up and create profile
-- Search and filter jobs
-- Apply to jobs with resume
-- Save jobs for later
-- Track application status
-
-## 🏗️ Project Structure
+## 🏗️ Project Architecture
 
 ```
 hirezium/
-├── app/
-│   ├── api/              # API routes
-│   ├── auth/             # Authentication pages
-│   ├── dashboard/        # Role-based dashboards
-│   ├── jobs/             # Job pages
-│   ├── globals.css       # Global styles
-│   ├── layout.tsx        # Root layout
-│   └── page.tsx          # Homepage
-├── components/
-│   └── ui/               # Shadcn UI components
-├── lib/
-│   ├── auth.ts           # Authentication utilities
-│   ├── cloudinary.ts     # File upload
-│   ├── export.ts         # Data export
-│   ├── middleware.ts     # Auth middleware
-│   ├── prisma.ts         # Prisma client
-│   ├── utils.ts          # Utility functions
-│   └── validation.ts     # Zod schemas
-├── prisma/
-│   ├── schema.prisma     # Database schema
-│   └── seed.ts           # Seed script
-└── package.json
+├── app/                  # Next.js App Router (Pages & API)
+│   ├── api/              # Backend API endpoints
+│   ├── (auth)/           # Authentication flows
+│   ├── dashboard/        # Role-specific user interfaces
+│   └── jobs/             # Public job listings and applications
+├── components/           # Reusable UI components (Shadcn UI)
+├── lib/                  # Shared utilities, validation, and core logic
+├── prisma/               # Database schema and migration tracking
+└── public/               # Static assets
 ```
 
-## 🔒 Security Features
+## 🎨 Tech Stack & Usage
 
-- JWT-based authentication
-- Password hashing with bcrypt
-- Role-based access control
-- Server-side validation
-- Protected API routes
-- File upload validation (5MB limit, PDF/DOC/DOCX only)
+### Frontend
+- **Next.js 15 (App Router)**: Core framework for server-side rendering, routing, and API handling.
+- **React 19**: UI library for building interactive components and managing application state.
+- **Tailwind CSS**: Utility-first CSS framework used for all styling and responsive design.
+- **Shadcn UI**: High-quality UI component library built on Radix UI, used for modals, buttons, forms, and tables.
+- **Lucide React**: Icon library used across all dashboards and portal pages.
 
-## 📊 Database Schema
+### Backend & Database
+- **Next.js API Routes**: Serverless functions handling all backend logic, authentication, and data transactions.
+- **Prisma ORM**: Type-safe database client used for all PostgreSQL interactions and migrations.
+- **PostgreSQL (Neon/Supabase)**: Relational database used for storing users, jobs, applications, and profiles.
+- **Bcryptjs**: Used for secure password hashing during signup and authentication.
+- **JSON Web Tokens (JWT)**: Secure stateless authentication for protecting routes and API endpoints.
 
-- **User**: Authentication and role management
-- **CandidateProfile**: Candidate information
-- **RecruiterProfile**: Recruiter/company information
-- **Job**: Job postings
-- **Application**: Job applications
-- **SavedJob**: Saved jobs for candidates
+### Integrations & Services
+- **Cloudinary**: Cloud-based storage for candidate resumes, using secure server-side signed uploads.
+- **Nodemailer / Gmail SMTP**: Service for sending automated email notifications (application status, stage updates).
+- **XLSX / jsPDF**: Libraries used for exporting applicant data to Excel spreadsheets and PDF documents.
+- **Zod**: TypeScript-first schema validation for both client-side forms and server-side API requests.
 
-## 🎨 Tech Stack
+## 🔄 Data Flow & Backend Management
 
-- **Frontend**: Next.js 15, React 19, Tailwind CSS, Shadcn UI
-- **Backend**: Next.js API Routes, Prisma ORM
-- **Database**: PostgreSQL (Neon/Supabase)
-- **Authentication**: JWT, bcryptjs
-- **File Storage**: Cloudinary
-- **Data Export**: xlsx, jspdf
-- **Deployment**: Vercel
+### 1. Request Lifecycle
+- **Client Request**: Frontend (React) sends a request to a Next.js API route.
+- **Middleware**: The request passes through `lib/middleware.ts` for JWT authentication and RBAC.
+- **Validation**: Incoming data is validated against Zod schemas in `lib/validation.ts`.
+- **API Handler**: The specific route handler in `app/api/` processes the request logic.
+- **ORM Interaction**: The handler uses `lib/prisma.ts` to interact with the PostgreSQL database.
+- **Response**: The server returns a JSON response with the appropriate HTTP status code.
 
-## 📝 API Endpoints
+### 2. Data Management & Storage
+- **Relational Mapping**: Prisma ORM manages complex relationships between Users, Profiles, Jobs, and Applications.
+- **Cloud Storage**: Resume files (PDF/DOCX) are NOT stored in the database; only URL and PublicID are stored.
+- **State Management**: Application statuses (NEW, REVIEWED, STAGE_1-5, SELECTED, REJECTED) are managed via Enums.
+- **Data Integrity**: Database-level constraints ensure consistency across the SaaS platform.
 
-### Authentication
+## 🔒 Security & Performance
 
-- `POST /api/auth/signup` - Candidate signup
-- `POST /api/auth/login` - Login
-- `POST /api/auth/recruiter-register` - Recruiter registration
-- `GET /api/auth/me` - Get current user
-- `POST /api/auth/logout` - Logout
-
-### Jobs
-
-- `GET /api/jobs` - List jobs (with filters)
-- `POST /api/jobs` - Create job (Recruiter/Admin)
-- `GET /api/jobs/[id]` - Get job details
-- `PUT /api/jobs/[id]` - Update job
-- `DELETE /api/jobs/[id]` - Delete job
-
-### Applications
-
-- `GET /api/applications` - List applications (role-based)
-- `POST /api/applications` - Apply to job (Candidate)
-- `PUT /api/applications/[id]` - Update status (Recruiter/Admin)
-
-### Admin
-
-- `GET /api/admin/recruiters` - List recruiters
-- `PUT /api/admin/recruiters` - Approve/reject recruiter
-
-### Export
-
-- `GET /api/export/applicants/[jobId]` - Export applicants data
-
-## 🐛 Troubleshooting
-
-### Database Connection Issues
-
-- Ensure your DATABASE_URL is correct
-- Check if your IP is whitelisted (for Neon/Supabase)
-- Verify SSL mode is set to `require`
-
-### File Upload Issues
-
-- Verify Cloudinary credentials
-- Check file size (max 5MB)
-- Ensure file type is PDF, DOC, or DOCX
-
-### Build Errors
-
-- Run `npm install` to ensure all dependencies are installed
-- Run `npx prisma generate` to regenerate Prisma client
-- Clear `.next` folder and rebuild
+- **Signed Uploads**: Resumes are uploaded securely via server-side API endpoints.
+- **RBAC**: Strict role-based access control on all dashboards and API routes.
+- **Data Integrity**: Zod-powered validation on both client and server.
+- **Optimized Assets**: Image optimization and efficient data fetching with Next.js 15.
 
 ## 📄 License
 
-MIT License - feel free to use this project for your own purposes.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📧 Support
-
-For issues or questions, please open an issue on GitHub.
+This project is licensed under the MIT License.
 
 ---
 
-Built with ❤️ using Next.js and modern web technologies
+Built with ❤️ for a seamless recruitment experience.

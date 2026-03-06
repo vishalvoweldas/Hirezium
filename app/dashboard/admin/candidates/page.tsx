@@ -17,19 +17,41 @@ export default function ManageCandidatesPage() {
     const [location, setLocation] = useState('')
     const [minExp, setMinExp] = useState('')
     const [maxExp, setMaxExp] = useState('')
+    const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 0 })
+    const [debouncedSearch, setDebouncedSearch] = useState('')
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search)
+            setPagination(prev => ({ ...prev, page: 1 }))
+        }, 500)
+        return () => clearTimeout(timer)
+    }, [search])
+
+    useEffect(() => {
+        setPagination(prev => ({ ...prev, page: 1 }))
+    }, [location, minExp, maxExp])
 
     useEffect(() => {
         fetchCandidates()
-    }, [])
+    }, [debouncedSearch, location, minExp, maxExp, pagination.page])
 
     const fetchCandidates = async () => {
         const token = localStorage.getItem('token')
+        setLoading(true)
         try {
-            const res = await fetch('/api/admin/candidates', {
+            let url = `/api/admin/candidates?page=${pagination.page}&limit=${pagination.limit}`
+            if (debouncedSearch) url += `&search=${encodeURIComponent(debouncedSearch)}`
+            if (location) url += `&location=${encodeURIComponent(location)}`
+            if (minExp) url += `&minExperience=${minExp}`
+            if (maxExp) url += `&maxExperience=${maxExp}`
+
+            const res = await fetch(url, {
                 headers: { Authorization: `Bearer ${token}` },
             })
             const data = await res.json()
             setCandidates(data.candidates || [])
+            if (data.pagination) setPagination(data.pagination)
         } catch (error) {
             console.error('Failed to fetch candidates:', error)
         } finally {
@@ -43,6 +65,7 @@ export default function ManageCandidatesPage() {
         if (location) url += `&location=${location}`
         if (minExp) url += `&minExperience=${minExp}`
         if (maxExp) url += `&maxExperience=${maxExp}`
+        if (debouncedSearch) url += `&search=${debouncedSearch}`
 
         try {
             const res = await fetch(url, {
@@ -60,26 +83,12 @@ export default function ManageCandidatesPage() {
         }
     }
 
-    const filteredCandidates = candidates.filter(candidate => {
-        const profile = candidate.candidateProfile
-        const matchesSearch = !search ||
-            candidate.email.toLowerCase().includes(search.toLowerCase()) ||
-            `${profile?.firstName} ${profile?.lastName}`.toLowerCase().includes(search.toLowerCase())
-
-        const matchesLocation = !location ||
-            profile?.location?.toLowerCase().includes(location.toLowerCase())
-
-        const matchesExp = (!minExp || (profile?.experience || 0) >= parseFloat(minExp)) &&
-            (!maxExp || (profile?.experience || 0) <= parseFloat(maxExp))
-
-        return matchesSearch && matchesLocation && matchesExp
-    })
-
     const clearFilters = () => {
         setSearch('')
         setLocation('')
         setMinExp('')
         setMaxExp('')
+        setPagination(prev => ({ ...prev, page: 1 }))
     }
 
     return (
@@ -166,72 +175,100 @@ export default function ManageCandidatesPage() {
                     <div className="text-center py-12">
                         <p className="text-gray-500">Loading candidates...</p>
                     </div>
-                ) : filteredCandidates.length === 0 ? (
+                ) : candidates.length === 0 ? (
                     <Card>
                         <CardContent className="py-12 text-center text-gray-500">
                             No candidates found matching your filters.
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredCandidates.map((candidate) => {
-                            const profile = candidate.candidateProfile
-                            return (
-                                <Card key={candidate.id} className="card-hover">
-                                    <CardHeader>
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <CardTitle className="text-xl">
-                                                    {profile ? `${profile.firstName} ${profile.lastName}` : 'N/A'}
-                                                </CardTitle>
-                                                <p className="text-sm text-gray-500">{candidate.email}</p>
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-center text-sm text-gray-500">
+                            <p>Showing {candidates.length} of {pagination.total} candidates</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {candidates.map((candidate) => {
+                                const profile = candidate.candidateProfile
+                                return (
+                                    <Card key={candidate.id} className="card-hover">
+                                        <CardHeader>
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <CardTitle className="text-xl">
+                                                        {profile ? `${profile.firstName} ${profile.lastName}` : 'N/A'}
+                                                    </CardTitle>
+                                                    <p className="text-sm text-gray-500">{candidate.email}</p>
+                                                </div>
+                                                <Badge variant="outline" className="bg-blue-50">
+                                                    {profile?.profileCompletion || 0}% Complete
+                                                </Badge>
                                             </div>
-                                            <Badge variant="outline" className="bg-blue-50">
-                                                {profile?.profileCompletion || 0}% Complete
-                                            </Badge>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="grid grid-cols-2 gap-4 text-sm">
-                                            <div className="flex items-center text-gray-600">
-                                                <MapPin className="w-4 h-4 mr-2" />
-                                                {profile?.location || 'Not set'}
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                                <div className="flex items-center text-gray-600">
+                                                    <MapPin className="w-4 h-4 mr-2" />
+                                                    {profile?.location || 'Not set'}
+                                                </div>
+                                                <div className="flex items-center text-gray-600">
+                                                    <Briefcase className="w-4 h-4 mr-2" />
+                                                    {profile?.experience ? `${profile.experience}Y Exp` : 'N/A'}
+                                                </div>
                                             </div>
-                                            <div className="flex items-center text-gray-600">
-                                                <Briefcase className="w-4 h-4 mr-2" />
-                                                {profile?.experience ? `${profile.experience}Y Exp` : 'N/A'}
-                                            </div>
-                                        </div>
 
-                                        {profile?.currentRole && (
-                                            <div className="text-sm">
-                                                <span className="font-semibold">Role: </span>
-                                                {profile.currentRole}
-                                            </div>
-                                        )}
+                                            {profile?.currentRole && (
+                                                <div className="text-sm">
+                                                    <span className="font-semibold">Role: </span>
+                                                    {profile.currentRole}
+                                                </div>
+                                            )}
 
-                                        {profile?.skills && profile.skills.length > 0 && (
-                                            <div className="flex flex-wrap gap-1">
-                                                {profile.skills.slice(0, 5).map((skill: string, i: number) => (
-                                                    <Badge key={i} variant="secondary" className="text-[10px] px-1.5 py-0">
-                                                        {skill}
-                                                    </Badge>
-                                                ))}
-                                                {profile.skills.length > 5 && (
-                                                    <Badge variant="secondary" className="text-[10px]">
-                                                        +{profile.skills.length - 5}
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        )}
+                                            {profile?.skills && profile.skills.length > 0 && (
+                                                <div className="flex flex-wrap gap-1">
+                                                    {profile.skills.slice(0, 5).map((skill: string, i: number) => (
+                                                        <Badge key={i} variant="secondary" className="text-[10px] px-1.5 py-0">
+                                                            {skill}
+                                                        </Badge>
+                                                    ))}
+                                                    {profile.skills.length > 5 && (
+                                                        <Badge variant="secondary" className="text-[10px]">
+                                                            +{profile.skills.length - 5}
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                            )}
 
-                                        <div className="pt-2 border-t text-xs text-gray-400">
-                                            Joined on: {new Date(candidate.createdAt).toLocaleDateString()}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            )
-                        })}
+                                            <div className="pt-2 border-t text-xs text-gray-400">
+                                                Joined on: {new Date(candidate.createdAt).toLocaleDateString()}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )
+                            })}
+                        </div>
+
+                        {/* Pagination Controls */}
+                        {pagination.totalPages > 1 && (
+                            <div className="flex justify-center items-center gap-4 pt-8">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setPagination(prev => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
+                                    disabled={pagination.page <= 1}
+                                >
+                                    Previous
+                                </Button>
+                                <span className="text-sm font-medium">
+                                    Page {pagination.page} of {pagination.totalPages}
+                                </span>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setPagination(prev => ({ ...prev, page: Math.min(pagination.totalPages, prev.page + 1) }))}
+                                    disabled={pagination.page >= pagination.totalPages}
+                                >
+                                    Next
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Users, Briefcase, FileText, UserCheck, LogOut, Settings } from 'lucide-react'
 
+import { useAuth } from '@/components/providers/AuthProvider'
+
 export default function AdminDashboard() {
     const router = useRouter()
     const [stats, setStats] = useState({
@@ -17,69 +19,34 @@ export default function AdminDashboard() {
         totalApplications: 0,
     })
 
+    const { user, loading: authLoading, logout } = useAuth()
+
     useEffect(() => {
-        checkAuth()
-        fetchStats()
-    }, [])
-
-    const checkAuth = async () => {
-        const token = localStorage.getItem('token')
-        if (!token) {
-            router.push('/auth/login')
-            return
-        }
-
-        try {
-            const res = await fetch('/api/auth/me', {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            if (!res.ok) throw new Error('Unauthorized')
-            const data = await res.json()
-
-            if (data.user.role !== 'ADMIN') {
+        if (!authLoading) {
+            if (!user) {
+                router.push('/auth/login')
+            } else if (user.role !== 'ADMIN') {
                 router.push('/candidate/home')
-                return
+            } else {
+                fetchStats()
             }
-        } catch (error) {
-            router.push('/auth/login')
         }
-    }
+    }, [user, authLoading, router])
 
     const fetchStats = async () => {
         const token = localStorage.getItem('token')
         try {
-            const [recruitersRes, jobsRes, appsRes] = await Promise.all([
-                fetch('/api/admin/recruiters?status=PENDING', {
-                    headers: { Authorization: `Bearer ${token}` },
-                }),
-                fetch('/api/jobs', {
-                    headers: { Authorization: `Bearer ${token}` },
-                }),
-                fetch('/api/applications', {
-                    headers: { Authorization: `Bearer ${token}` },
-                }),
-            ])
-
-            const recruiters = await recruitersRes.json()
-            const jobs = await jobsRes.json()
-            const apps = await appsRes.json()
-
-            setStats({
-                totalUsers: 0, // Would need a separate endpoint
-                pendingRecruiters: recruiters.recruiters?.length || 0,
-                totalJobs: jobs.jobs?.length || 0,
-                totalApplications: apps.applications?.length || 0,
+            const res = await fetch('/api/admin/dashboard-stats', {
+                headers: { Authorization: `Bearer ${token}` },
             })
+            if (!res.ok) throw new Error('Failed to fetch stats')
+            const data = await res.json()
+            setStats(data)
         } catch (error) {
             console.error('Failed to fetch stats:', error)
         }
     }
 
-    const handleLogout = () => {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        router.push('/')
-    }
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -91,7 +58,7 @@ export default function AdminDashboard() {
                             <img src="/icon-transparent.png" alt="Hirezium Logo" className="w-12 h-12 md:w-16 md:h-16 object-contain" />
                             <span>Hirezium Admin</span>
                         </Link>
-                        <Button variant="ghost" className="text-white hover:bg-white/10" onClick={handleLogout}>
+                        <Button variant="ghost" className="text-white hover:bg-white/10" onClick={logout}>
                             <LogOut className="w-4 h-4 mr-2" />
                             Logout
                         </Button>

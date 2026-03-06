@@ -7,13 +7,14 @@ async function main() {
   console.log("🌱 Starting database seed...");
 
   // Create Admin User
-  const adminPassword = await bcrypt.hash("hirezium@123", 10);
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@hirezium.com";
+  const adminPasswordHash = await bcrypt.hash(process.env.ADMIN_PASSWORD || "admin123", 10);
   const admin = await prisma.user.upsert({
-    where: { email: "hirezium.notifications@gmail.com" },
+    where: { email: adminEmail },
     update: {},
     create: {
-      email: "hirezium.notifications@gmail.com",
-      password: adminPassword,
+      email: adminEmail,
+      password: adminPasswordHash,
       role: UserRole.ADMIN,
       approvalStatus: ApprovalStatus.APPROVED,
     },
@@ -22,13 +23,14 @@ async function main() {
   console.log("✅ Created admin user:", admin.email);
 
   // Create Sample Recruiter
-  const recruiterPassword = await bcrypt.hash("veeresh@21", 10);
+  const recruiterEmail = "recruiter@example.com";
+  const recruiterPasswordHash = await bcrypt.hash("recruiter123", 10);
   const recruiter = await prisma.user.upsert({
-    where: { email: "voweldasveeresh@gmail.com" },
+    where: { email: recruiterEmail },
     update: {},
     create: {
-      email: "voweldasveeresh@gmail.com",
-      password: recruiterPassword,
+      email: recruiterEmail,
+      password: recruiterPasswordHash,
       role: UserRole.RECRUITER,
       approvalStatus: ApprovalStatus.APPROVED,
       recruiterProfile: {
@@ -108,9 +110,9 @@ async function main() {
   console.log("✅ Created sample jobs");
 
   console.log("\n🎉 Seed completed successfully!");
-  console.log("\n📝 Login Credentials:");
-  console.log("Admin: hirezium.notifications@gmail.com / hirezium@123");
-  console.log("Recruiter: voweldasveeresh@gmail.com / veeresh@21");
+  console.log("\n📝 Default Login Credentials (if not set in env):");
+  console.log(`Admin: ${adminEmail} / admin123`);
+  console.log(`Recruiter: ${recruiterEmail} / recruiter123`);
   console.log("Candidate: john.doe@example.com / candidate123");
 }
 

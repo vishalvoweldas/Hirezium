@@ -25,7 +25,8 @@ async function updateProfileHandler(request: AuthenticatedRequest) {
                 )
             }
 
-            // Update profile
+            // Update profile and completion in one go
+            const completion = calculateProfileCompletion({ ...existingProfile, ...validatedData })
             const profile = await prisma.candidateProfile.update({
                 where: { userId },
                 data: {
@@ -43,19 +44,13 @@ async function updateProfileHandler(request: AuthenticatedRequest) {
                     noticePeriod: validatedData.noticePeriod,
                     currentCtc: validatedData.currentCtc,
                     expectedCtc: validatedData.expectedCtc,
+                    profileCompletion: completion,
                 },
-            })
-
-            // Update profile completion
-            const completion = calculateProfileCompletion(profile)
-            const updatedProfile = await prisma.candidateProfile.update({
-                where: { id: profile.id },
-                data: { profileCompletion: completion },
             })
 
             return NextResponse.json({
                 message: 'Profile updated successfully',
-                profile: updatedProfile,
+                profile: profile,
             })
         } else if (role === UserRole.RECRUITER) {
             // Find existing profile

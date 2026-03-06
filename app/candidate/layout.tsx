@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import CandidateNavbar from '@/components/candidate/CandidateNavbar'
 import CandidateMobileNav from '@/components/candidate/CandidateMobileNav'
+import { useAuth } from '@/components/providers/AuthProvider'
 
 export default function CandidateLayout({
     children,
@@ -11,42 +12,30 @@ export default function CandidateLayout({
     children: React.ReactNode
 }) {
     const router = useRouter()
+    const { user, loading } = useAuth()
 
     useEffect(() => {
-        checkAuth()
-    }, [])
-
-    const checkAuth = async () => {
-        const token = localStorage.getItem('token')
-        if (!token) {
+        if (!loading && !user) {
             router.push('/auth/login')
-            return
-        }
-
-        try {
-            const res = await fetch('/api/auth/me', {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-
-            if (!res.ok) {
-                router.push('/auth/login')
-                return
+        } else if (!loading && user && user.role !== 'CANDIDATE') {
+            if (user.role === 'RECRUITER') {
+                router.push('/dashboard/recruiter')
+            } else if (user.role === 'ADMIN') {
+                router.push('/dashboard/admin')
             }
-
-            const data = await res.json()
-
-            // Check if user is a candidate
-            if (data.user.role !== 'CANDIDATE') {
-                // Redirect to appropriate dashboard
-                if (data.user.role === 'RECRUITER') {
-                    router.push('/dashboard/recruiter')
-                } else if (data.user.role === 'ADMIN') {
-                    router.push('/dashboard/admin')
-                }
-            }
-        } catch (error) {
-            router.push('/auth/login')
         }
+    }, [user, loading, router])
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-50">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#08262C]"></div>
+            </div>
+        )
+    }
+
+    if (!user || user.role !== 'CANDIDATE') {
+        return null
     }
 
     return (

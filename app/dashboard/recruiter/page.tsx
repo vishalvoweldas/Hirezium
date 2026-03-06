@@ -6,10 +6,11 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Briefcase, Users, FileText, LogOut, BarChart } from "lucide-react";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function RecruiterDashboard() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const { user, loading: authLoading, logout } = useAuth();
   const [stats, setStats] = useState({
     totalJobs: 0,
     activeJobs: 0,
@@ -17,86 +18,41 @@ export default function RecruiterDashboard() {
   });
 
   useEffect(() => {
-    checkAuth();
-    fetchStats();
-
-    // Auto-refresh stats every 3 seconds
-    const interval = setInterval(() => {
-      fetchStats();
-    }, 3000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
-
-  const checkAuth = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/auth/login");
-      return;
-    }
-
-    try {
-      const res = await fetch("/api/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Unauthorized");
-      const data = await res.json();
-
-      if (data.user.role !== "RECRUITER" && data.user.role !== "ADMIN") {
+    if (!authLoading) {
+      if (!user) {
+        router.push("/auth/login");
+      } else if (user.role !== "RECRUITER" && user.role !== "ADMIN") {
         router.push("/candidate/home");
-        return;
+      } else {
+        fetchStats();
       }
-
-      setUser(data.user);
-    } catch (error) {
-      router.push("/auth/login");
     }
-  };
+  }, [user, authLoading, router]);
+
+  useEffect(() => {
+    if (user && (user.role === "RECRUITER" || user.role === "ADMIN")) {
+      // Auto-refresh stats every 30 seconds (reduced from 3s to save resources)
+      const interval = setInterval(() => {
+        fetchStats();
+      }, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
 
   const fetchStats = async () => {
     const token = localStorage.getItem("token");
     try {
-      console.log("Fetching stats...", new Date().toLocaleTimeString());
-      const res = await fetch("/api/jobs", {
+      const res = await fetch("/api/recruiter/dashboard-stats", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!res.ok) throw new Error('Failed to fetch stats');
       const data = await res.json();
-
-      // Filter jobs by current recruiter (this would be done server-side in production)
-      const myJobs = data.jobs || [];
-
-      console.log(
-        "All jobs from API:",
-        myJobs.map((j: any) => ({
-          id: j.id,
-          title: j.title,
-          isActive: j.isActive,
-        })),
-      );
-
-      const newStats = {
-        totalJobs: myJobs.length,
-        activeJobs: myJobs.filter((j: any) => j.isActive).length,
-        totalApplicants: myJobs.reduce(
-          (sum: number, j: any) => sum + (j.applicantCount || 0),
-          0,
-        ),
-      };
-
-      console.log("Stats updated:", newStats);
-      setStats(newStats);
+      setStats(data);
     } catch (error) {
       console.error("Failed to fetch stats:", error);
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    router.push("/");
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -115,7 +71,7 @@ export default function RecruiterDashboard() {
               <Button
                 variant="ghost"
                 className="text-white hover:bg-white/10"
-                onClick={handleLogout}
+                onClick={logout}
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout

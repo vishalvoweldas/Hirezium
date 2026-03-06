@@ -7,43 +7,33 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import PlacementDataUpload from '@/components/PlacementDataUpload'
 import { ArrowLeft, BarChart3 } from 'lucide-react'
+import { useAuth } from '@/components/providers/AuthProvider'
 
 export default function PlacementManagementPage() {
     const router = useRouter()
-    const [loading, setLoading] = useState(true)
-    const [userRole, setUserRole] = useState<string | null>(null)
+    const { user, loading: authLoading } = useAuth()
+    const userRole = user?.role || null
 
     useEffect(() => {
-        checkAuth()
-    }, [])
-
-    const checkAuth = async () => {
-        const token = localStorage.getItem('token')
-        if (!token) {
-            router.push('/auth/login')
-            return
-        }
-
-        try {
-            const res = await fetch('/api/auth/me', {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-
-            if (res.ok) {
-                const data = await res.json()
-                if (data.user.role === 'ADMIN' || data.user.role === 'RECRUITER') {
-                    setUserRole(data.user.role)
-                } else {
-                    router.push('/candidate/home')
-                }
-            } else {
+        if (!authLoading) {
+            if (!user) {
                 router.push('/auth/login')
+            } else if (user.role !== 'ADMIN' && user.role !== 'RECRUITER') {
+                router.push('/candidate/home')
             }
-        } catch (error) {
-            router.push('/auth/login')
-        } finally {
-            setLoading(false)
         }
+    }, [user, authLoading, router])
+
+    if (authLoading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#124A59]"></div>
+            </div>
+        )
+    }
+
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'RECRUITER')) {
+        return null
     }
 
     if (loading) {

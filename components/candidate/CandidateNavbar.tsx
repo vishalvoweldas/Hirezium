@@ -5,42 +5,27 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Home, Briefcase, Bookmark, FileText, User, Settings, LogOut } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/components/providers/AuthProvider'
 
 export default function CandidateNavbar() {
     const pathname = usePathname()
     const router = useRouter()
+    const { user, logout } = useAuth()
     const [userName, setUserName] = useState<string>('Candidate')
 
     useEffect(() => {
-        fetchUserName()
-    }, [])
-
-    const fetchUserName = async () => {
-        const token = localStorage.getItem('token')
-        if (!token) return
-
-        try {
-            const res = await fetch('/api/auth/me', {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-            if (res.ok) {
-                const data = await res.json()
-                const profile = data.user.profile
-                if (profile?.firstName && profile?.lastName) {
-                    setUserName(`${profile.firstName} ${profile.lastName}`)
-                } else if (data.user.email) {
-                    setUserName(data.user.email.split('@')[0])
-                }
+        if (user) {
+            const profile = user.candidateProfile
+            if (profile?.firstName && profile?.lastName) {
+                setUserName(`${profile.firstName} ${profile.lastName}`)
+            } else if (user.email) {
+                setUserName(user.email.split('@')[0])
             }
-        } catch (error) {
-            console.error('Failed to fetch user name:', error)
         }
-    }
+    }, [user])
 
     const handleLogout = () => {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        router.push('/')
+        logout()
     }
 
     const navItems = [

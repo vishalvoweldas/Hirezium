@@ -12,7 +12,9 @@ import {
   Briefcase,
   Bookmark,
   BookmarkCheck,
+  Clock,
 } from "lucide-react";
+import { stripMarkdown } from "@/lib/utils";
 
 function CandidateJobsContent() {
   const router = useRouter();
@@ -113,7 +115,7 @@ function CandidateJobsContent() {
   };
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
         <div className="content-container">
           {/* Header */}
@@ -164,72 +166,83 @@ function CandidateJobsContent() {
               <p className="text-sm text-secondary-dark mb-4">
                 Found {jobs.length} job{jobs.length !== 1 ? "s" : ""}
               </p>
-              <div className="grid gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {jobs.map((job) => (
-                  <Card key={job.id} className="card-modern">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <CardTitle className="text-xl text-primary-dark mb-2">
-                            {job.title}
-                          </CardTitle>
-                          <div className="flex flex-wrap items-center gap-4 text-sm text-secondary-dark">
-                            <div className="flex items-center gap-1">
-                              <MapPin className="w-4 h-4" />
-                              <span>{job.location}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Briefcase className="w-4 h-4" />
-                              <span>{job.jobType}</span>
-                            </div>
-                            {job.workMode === 'REMOTE' && (
-                              <Badge className="bg-green-100 text-green-800 border-none">Remote</Badge>
-                            )}
-                            {job.workMode === 'ON_SITE' && (
-                              <Badge variant="outline" className="text-blue-700 border-blue-200">On-site</Badge>
-                            )}
-                            {job.workMode === 'HYBRID' && (
-                              <Badge className="bg-purple-100 text-purple-800 border-none">Hybrid</Badge>
-                            )}
-                            {job.salary && (
-                              <div className="flex items-center gap-2 ml-auto pr-4">
-                                <span className="text-xs text-gray-400 uppercase">CTC</span>
-                                <span className="text-base font-bold text-green-600">
-                                  {job.salary}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleSaveJob(job.id);
-                          }}
-                        >
-                          {savedJobIds.has(job.id) ? (
-                            <BookmarkCheck className="w-5 h-5 text-blue-600" />
-                          ) : (
-                            <Bookmark className="w-5 h-5 text-gray-400" />
-                          )}
-                        </Button>
+                  <Card key={job.id} className="card-modern flex flex-col h-full hover:shadow-lg transition-shadow duration-300">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start justify-between gap-4">
+                        <CardTitle className="text-xl font-heading font-bold text-primary-dark line-clamp-2 min-h-[3.5rem]">
+                          {job.title}
+                        </CardTitle>
+                        <Badge variant="outline" className="rounded-full bg-gray-50 text-gray-600 border-gray-200 text-[10px] uppercase font-bold whitespace-nowrap px-3 py-1">
+                          {job.workMode?.replace('_', '-').toLowerCase()}
+                        </Badge>
                       </div>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-secondary-dark mb-4 line-clamp-2">
-                        {job.description}
-                      </p>
-                      <div className="flex gap-2">
+                    <CardContent className="flex-1 space-y-4">
+                      <div className="space-y-2 text-sm text-secondary-dark">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-gray-400" />
+                          <span className="line-clamp-1">{job.location}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 font-medium">
+                            <Briefcase className="w-4 h-4 text-gray-400" />
+                            <span>{job.jobType?.replace('_', ' ')}</span>
+                          </div>
+                          {job.salary && (
+                            <div className="flex items-center gap-1">
+                              <span className="text-[10px] text-gray-400 uppercase font-bold">CTC</span>
+                              <span className="text-sm font-bold text-green-600">{job.salary}</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-gray-400" />
+                          <span>{job.experience || "Freshers Only"}</span>
+                        </div>
+                      </div>
+
+                      {/* Skills */}
+                      {job.skills && job.skills.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 min-h-[3rem]">
+                          {job.skills.slice(0, 3).map((skill: string, i: number) => (
+                            <Badge key={i} variant="secondary" className="bg-gray-50 text-gray-600 border-gray-200 text-[10px] font-medium px-2 py-0.5">
+                              {skill}
+                            </Badge>
+                          ))}
+                          {job.skills.length > 3 && (
+                            <Badge variant="secondary" className="bg-gray-50 text-gray-600 border-gray-200 text-[10px] font-medium px-2 py-0.5">
+                              +{job.skills.length - 3} more
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="pt-4 mt-auto">
                         <Button
                           onClick={() => router.push(`/jobs/${job.id}`)}
-                          className="btn-primary"
+                          className="w-full bg-[#08262C] hover:bg-[#124A59] text-white font-bold py-6 rounded-lg transition-all duration-300"
                         >
                           View Details
                         </Button>
                       </div>
                     </CardContent>
+
+                    {/* Bookmark - Absolute positioned for clean look */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSaveJob(job.id);
+                      }}
+                      className="absolute top-2 right-2 p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                    >
+                      {savedJobIds.has(job.id) ? (
+                        <BookmarkCheck className="w-5 h-5 text-blue-600" />
+                      ) : (
+                        <Bookmark className="w-5 h-5 text-gray-300" />
+                      )}
+                    </button>
                   </Card>
                 ))}
               </div>

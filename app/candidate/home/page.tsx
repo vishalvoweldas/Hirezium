@@ -6,11 +6,13 @@ import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, MapPin, Briefcase, FileText, Bookmark, User, TrendingUp, Award } from 'lucide-react'
+import { Search, MapPin, Briefcase, FileText, Bookmark, User, TrendingUp, Award, Clock } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { useAuth } from '@/components/providers/AuthProvider'
 
 export default function CandidateHomePage() {
     const router = useRouter()
-    const [user, setUser] = useState<any>(null)
+    const { user, loading: authLoading } = useAuth()
     const [stats, setStats] = useState({
         appliedJobs: 0,
         savedJobs: 0,
@@ -21,51 +23,31 @@ export default function CandidateHomePage() {
     const [recommendedJobs, setRecommendedJobs] = useState<any[]>([])
 
     useEffect(() => {
-        fetchUserData()
-        fetchStats()
-        fetchRecommendedJobs()
-    }, [])
-
-    const fetchUserData = async () => {
-        const token = localStorage.getItem('token')
-        if (!token) return
-
-        try {
-            const res = await fetch('/api/auth/me', {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-            if (res.ok) {
-                const data = await res.json()
-                setUser(data.user)
-            }
-        } catch (error) {
-            console.error('Failed to fetch user data:', error)
+        if (user) {
+            fetchStats()
+            fetchRecommendedJobs()
         }
-    }
+    }, [user])
 
     const fetchStats = async () => {
         const token = localStorage.getItem('token')
         try {
-            const [applicationsRes, savedRes, userRes] = await Promise.all([
+            const [applicationsRes, savedRes] = await Promise.all([
                 fetch('/api/applications', {
                     headers: { Authorization: `Bearer ${token}` },
                 }),
                 fetch('/api/saved-jobs', {
                     headers: { Authorization: `Bearer ${token}` },
                 }),
-                fetch('/api/auth/me', {
-                    headers: { Authorization: `Bearer ${token}` },
-                }),
             ])
 
             const applications = await applicationsRes.json()
             const saved = await savedRes.json()
-            const userData = await userRes.json()
 
             setStats({
                 appliedJobs: applications.applications?.length || 0,
                 savedJobs: saved.savedJobs?.length || 0,
-                profileCompletion: userData.user?.profile?.profileCompletion || 0,
+                profileCompletion: user?.candidateProfile?.profileCompletion || 0,
             })
         } catch (error) {
             console.error('Failed to fetch stats:', error)
@@ -92,8 +74,8 @@ export default function CandidateHomePage() {
     }
 
     const getUserName = () => {
-        if (user?.profile?.firstName && user?.profile?.lastName) {
-            return `${user.profile.firstName} ${user.profile.lastName}`
+        if (user?.candidateProfile?.firstName && user?.candidateProfile?.lastName) {
+            return `${user.candidateProfile.firstName} ${user.candidateProfile.lastName}`
         }
         return user?.email?.split('@')[0] || 'there'
     }
@@ -208,31 +190,35 @@ export default function CandidateHomePage() {
                         </div>
 
                         {recommendedJobs.length > 0 ? (
-                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {recommendedJobs.map((job) => (
                                     <Card
                                         key={job.id}
-                                        className="bg-white/10 border-white/20 text-white hover:bg-white/20 transition-all cursor-pointer"
+                                        className="bg-white/10 border-white/20 text-white hover:bg-white/20 transition-all cursor-pointer flex flex-col h-full backdrop-blur-sm p-6"
                                         onClick={() => router.push(`/jobs/${job.id}`)}
                                     >
-                                        <CardHeader>
-                                            <CardTitle className="text-lg">{job.title}</CardTitle>
-                                            <p className="text-sm text-on-gradient-muted">{job.location}</p>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="flex items-center justify-between text-sm text-on-gradient-muted mb-2">
-                                                <div className="flex items-center gap-2">
-                                                    <Briefcase className="w-4 h-4" />
-                                                    <span>{job.jobType}</span>
+                                        <div className="space-y-4">
+                                            <div className="space-y-1">
+                                                <h3 className="text-base font-bold text-white line-clamp-2 leading-tight">
+                                                    {job.title}
+                                                </h3>
+                                                <p className="text-xs text-white/50">{job.location}</p>
+                                            </div>
+
+                                            <div className="flex items-center justify-between mt-auto">
+                                                <div className="flex items-center gap-2 text-xs text-white/70">
+                                                    <Briefcase className="w-5 h-14 text-white/40" />
+                                                    <span>{job.jobType?.replace('_', ' ')}</span>
                                                 </div>
+
                                                 {job.salary && (
-                                                    <div className="flex items-center gap-2 pr-4">
-                                                        <span className="text-xs text-on-gradient-muted uppercase">CTC</span>
-                                                        <p className="text-base font-bold text-green-400">{job.salary}</p>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="text-[10px] text-white/40 uppercase font-bold">CTC</span>
+                                                        <span className="text-xs font-bold text-green-400">{job.salary}</span>
                                                     </div>
                                                 )}
                                             </div>
-                                        </CardContent>
+                                        </div>
                                     </Card>
                                 ))}
                             </div>

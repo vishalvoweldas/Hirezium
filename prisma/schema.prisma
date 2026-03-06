@@ -26,6 +26,7 @@ model User {
   @@index([email])
   @@index([role])
   @@index([approvalStatus])
+  @@index([createdAt])
 }
 
 model CandidateProfile {
@@ -51,6 +52,8 @@ model CandidateProfile {
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([location])
+  @@index([experience])
 }
 
 model RecruiterProfile {
@@ -66,6 +69,7 @@ model RecruiterProfile {
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([companyName])
 }
 
 model Job {
@@ -95,6 +99,8 @@ model Job {
   @@index([isActive])
   @@index([jobType])
   @@index([location])
+  @@index([workMode])
+  @@index([createdAt])
 }
 
 model Application {
@@ -117,6 +123,9 @@ model Application {
   @@index([jobId])
   @@index([candidateId])
   @@index([status])
+  @@index([jobId, status])
+  @@index([candidateId, status])
+  @@index([appliedAt])
 }
 
 model SavedJob {
