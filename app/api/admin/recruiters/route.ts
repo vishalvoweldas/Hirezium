@@ -9,50 +9,18 @@ async function getRecruitersHandler(request: AuthenticatedRequest) {
         const { searchParams } = new URL(request.url)
         const status = searchParams.get('status') || 'PENDING'
 
-        const page = parseInt(searchParams.get('page') || '1')
-        const limit = parseInt(searchParams.get('limit') || '10')
-        const skip = (page - 1) * limit
-
-        const [recruiters, total] = await Promise.all([
-            prisma.user.findMany({
-                where: {
-                    role: UserRole.RECRUITER,
-                    approvalStatus: status as ApprovalStatus,
-                },
-                select: {
-                    id: true,
-                    email: true,
-                    approvalStatus: true,
-                    createdAt: true,
-                    recruiterProfile: {
-                        select: {
-                            companyName: true,
-                            phone: true,
-                            location: true,
-                        }
-                    },
-                },
-                orderBy: { createdAt: 'desc' },
-                skip,
-                take: limit,
-            }),
-            prisma.user.count({
-                where: {
-                    role: UserRole.RECRUITER,
-                    approvalStatus: status as ApprovalStatus,
-                }
-            }),
-        ])
-
-        return NextResponse.json({
-            recruiters,
-            pagination: {
-                page,
-                limit,
-                total,
-                totalPages: Math.ceil(total / limit),
-            }
+        const recruiters = await prisma.user.findMany({
+            where: {
+                role: UserRole.RECRUITER,
+                approvalStatus: status as ApprovalStatus,
+            },
+            include: {
+                recruiterProfile: true,
+            },
+            orderBy: { createdAt: 'desc' },
         })
+
+        return NextResponse.json({ recruiters })
     } catch (error) {
         console.error('Get recruiters error:', error)
         return NextResponse.json(

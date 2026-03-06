@@ -11,11 +11,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Upload, X, FileText, Eye, Download } from 'lucide-react'
 import ResumePreviewModal from '@/components/ResumePreviewModal'
-import { useAuth } from '@/components/providers/AuthProvider'
 
 export default function CandidateProfile() {
     const router = useRouter()
-    const { user, loading: authLoading, mutate } = useAuth()
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [loading, setLoading] = useState(false)
     const [uploading, setUploading] = useState(false)
@@ -40,25 +38,38 @@ export default function CandidateProfile() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
     useEffect(() => {
-        if (user?.candidateProfile) {
-            setFormData({
-                firstName: user.candidateProfile.firstName || '',
-                lastName: user.candidateProfile.lastName || '',
-                phone: user.candidateProfile.phone || '',
-                location: user.candidateProfile.location || '',
-                experience: user.candidateProfile.experience || 0,
-                skills: user.candidateProfile.skills || [],
-                bio: user.candidateProfile.bio || '',
-                resumeUrl: user.candidateProfile.resumeUrl || '',
-                resumePublicId: user.candidateProfile.resumePublicId || '',
-                currentCompany: user.candidateProfile.currentCompany || '',
-                currentRole: user.candidateProfile.currentRole || '',
-                noticePeriod: user.candidateProfile.noticePeriod || '',
-                currentCtc: user.candidateProfile.currentCtc || '',
-                expectedCtc: user.candidateProfile.expectedCtc || '',
+        fetchProfile()
+    }, [])
+
+    const fetchProfile = async () => {
+        const token = localStorage.getItem('token')
+        try {
+            const res = await fetch('/api/auth/me', {
+                headers: { Authorization: `Bearer ${token}` },
             })
+            const data = await res.json()
+            if (data.user.profile) {
+                setFormData({
+                    firstName: data.user.profile.firstName || '',
+                    lastName: data.user.profile.lastName || '',
+                    phone: data.user.profile.phone || '',
+                    location: data.user.profile.location || '',
+                    experience: data.user.profile.experience || 0,
+                    skills: data.user.profile.skills || [],
+                    bio: data.user.profile.bio || '',
+                    resumeUrl: data.user.profile.resumeUrl || '',
+                    resumePublicId: data.user.profile.resumePublicId || '',
+                    currentCompany: data.user.profile.currentCompany || '',
+                    currentRole: data.user.profile.currentRole || '',
+                    noticePeriod: data.user.profile.noticePeriod || '',
+                    currentCtc: data.user.profile.currentCtc || '',
+                    expectedCtc: data.user.profile.expectedCtc || '',
+                })
+            }
+        } catch (error) {
+            console.error('Failed to fetch profile:', error)
         }
-    }, [user])
+    }
 
     const handleAddSkill = () => {
         if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
@@ -94,40 +105,22 @@ export default function CandidateProfile() {
 
         setUploading(true)
         try {
+            const uploadFormData = new FormData()
+            uploadFormData.append('file', resumeFile)
+
             const token = localStorage.getItem('token')
+            const res = await fetch('/api/upload/resume', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: uploadFormData,
+            })
 
-            // 1. Get signature from server
-            const signRes = await fetch('/api/upload/sign', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (!signRes.ok) throw new Error('Failed to get upload signature');
-            const { signature, timestamp, cloudName, apiKey } = await signRes.json();
+            const data = await res.json()
+            if (!res.ok) throw new Error(data.error || 'Upload failed')
 
-            // 2. Upload directly to Cloudinary
-            const uploadFormData = new FormData();
-            uploadFormData.append('file', resumeFile);
-            uploadFormData.append('signature', signature);
-            uploadFormData.append('timestamp', timestamp.toString());
-            uploadFormData.append('api_key', apiKey);
-            uploadFormData.append('folder', 'hirezium/resumes');
-            uploadFormData.append('resource_type', 'raw');
-            uploadFormData.append('type', 'authenticated');
-
-            const uploadRes = await fetch(
-                `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
-                {
-                    method: 'POST',
-                    body: uploadFormData,
-                }
-            );
-
-            if (!uploadRes.ok) {
-                const errorData = await uploadRes.json();
-                throw new Error(errorData.error?.message || 'Cloudinary upload failed');
-            }
-
-            const data = await uploadRes.json();
-            return { url: data.secure_url, publicId: data.public_id };
+            return { url: data.url, publicId: data.publicId }
         } catch (error: any) {
             console.error('Resume upload failed:', error)
             alert(error.message || 'Failed to upload resume')
@@ -194,7 +187,6 @@ export default function CandidateProfile() {
 
             if (res.ok) {
                 alert('Profile updated successfully!')
-                mutate()
                 router.push('/dashboard/candidate')
             } else {
                 alert(data.error || 'Failed to update profile')

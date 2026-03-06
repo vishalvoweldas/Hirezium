@@ -10,9 +10,6 @@ async function getApplicationsHandler(request: AuthenticatedRequest) {
         const { searchParams } = new URL(request.url)
         const jobId = searchParams.get('jobId')
         const status = searchParams.get('status')
-        const page = parseInt(searchParams.get('page') || '1')
-        const limit = parseInt(searchParams.get('limit') || '10')
-        const skip = (page - 1) * limit
 
         const where: any = {}
 
@@ -20,70 +17,43 @@ async function getApplicationsHandler(request: AuthenticatedRequest) {
         if (request.user!.role === UserRole.CANDIDATE) {
             where.candidateId = request.user!.userId
         } else if (request.user!.role === UserRole.RECRUITER) {
+            // Recruiters see applications for their jobs
             where.job = {
                 recruiterId: request.user!.userId,
             }
         }
+        // Admins see all applications (no filter)
 
-        if (jobId) where.jobId = jobId
-        if (status) where.status = status as ApplicationStatus
+        if (jobId) {
+            where.jobId = jobId
+        }
 
-        const [applications, total] = await Promise.all([
-            prisma.application.findMany({
-                where,
-                select: {
-                    id: true,
-                    status: true,
-                    currentStage: true,
-                    appliedAt: true,
-                    job: {
-                        select: {
-                            id: true,
-                            title: true,
-                            location: true,
-                            jobType: true,
-                            recruiter: {
-                                select: {
-                                    recruiterProfile: {
-                                        select: {
-                                            companyName: true,
-                                        }
-                                    }
-                                }
-                            }
-                        }
+        if (status) {
+            where.status = status
+        }
+
+        const applications = await prisma.application.findMany({
+            where,
+            include: {
+                job: {
+                    include: {
+                        recruiter: {
+                            include: {
+                                recruiterProfile: true,
+                            },
+                        },
                     },
-                    candidate: {
-                        select: {
-                            id: true,
-                            email: true,
-                            candidateProfile: {
-                                select: {
-                                    firstName: true,
-                                    lastName: true,
-                                    phone: true,
-                                    location: true,
-                                }
-                            }
-                        }
-                    }
                 },
-                orderBy: { appliedAt: 'desc' },
-                skip,
-                take: limit,
-            }),
-            prisma.application.count({ where }),
-        ])
-
-        return NextResponse.json({
-            applications,
-            pagination: {
-                page,
-                limit,
-                total,
-                totalPages: Math.ceil(total / limit),
-            }
+                candidate: {
+                    include: {
+                        candidateProfile: true,
+                    },
+                },
+            },
+            orderBy: { appliedAt: 'desc' },
         })
+
+        return NextResponse.json({ applications })
     } catch (error) {
         console.error('Get applications error:', error)
         return NextResponse.json(
@@ -101,22 +71,10 @@ async function createApplicationHandler(request: AuthenticatedRequest) {
         // Validate input
         const validatedData = applicationSchema.parse(body)
 
-        // Parallelize job existence check and duplicate application check
-        const [job, existingApplication] = await Promise.all([
-            prisma.job.findUnique({
-                where: { id: validatedData.jobId },
-                select: { id: true, isActive: true, title: true, recruiter: { select: { recruiterProfile: { select: { companyName: true } } } } }
-            }),
-            prisma.application.findUnique({
-                where: {
-                    jobId_candidateId: {
-                        jobId: validatedData.jobId,
-                        candidateId: request.user!.userId,
-                    },
-                },
-                select: { id: true }
-            })
-        ])
+        // Check if job exists and is active
+        const job = await prisma.job.findUnique({
+            where: { id: validatedData.jobId },
+        })
 
         if (!job) {
             return NextResponse.json(
@@ -132,6 +90,16 @@ async function createApplicationHandler(request: AuthenticatedRequest) {
             )
         }
 
+        // Check if already applied
+        const existingApplication = await prisma.application.findUnique({
+            where: {
+                jobId_candidateId: {
+                    jobId: validatedData.jobId,
+                    candidateId: request.user!.userId,
+                },
+            },
+        })
+
         if (existingApplication) {
             return NextResponse.json(
                 { error: 'You have already applied to this job' },
@@ -146,7 +114,6 @@ async function createApplicationHandler(request: AuthenticatedRequest) {
         if (!resumeUrl || !resumePublicId) {
             const profile = await prisma.candidateProfile.findUnique({
                 where: { userId: request.user!.userId },
-                select: { resumeUrl: true, resumePublicId: true, firstName: true, lastName: true }
             })
             if (!resumeUrl) resumeUrl = profile?.resumeUrl || undefined
             if (!resumePublicId) resumePublicId = profile?.resumePublicId || undefined
@@ -162,19 +129,22 @@ async function createApplicationHandler(request: AuthenticatedRequest) {
                 resumePublicId,
                 status: ApplicationStatus.NEW,
             },
-            select: {
-                id: true,
-                status: true,
-                appliedAt: true,
+            include: {
+                job: {
+                    include: {
+                        recruiter: {
+                            include: {
+                                recruiterProfile: true,
+                            },
+                        },
+                    },
+                },
                 candidate: {
-                    select: {
-                        email: true,
-                        candidateProfile: {
-                            select: { firstName: true, lastName: true }
-                        }
-                    }
-                }
-            }
+                    include: {
+                        candidateProfile: true,
+                    },
+                },
+            },
         })
 
         // Send application received email
@@ -183,15 +153,15 @@ async function createApplicationHandler(request: AuthenticatedRequest) {
             const candidateName = application.candidate.candidateProfile
                 ? `${application.candidate.candidateProfile.firstName} ${application.candidate.candidateProfile.lastName}`
                 : 'Candidate'
-
             await sendApplicationReceivedEmail(
                 application.candidate.email,
                 candidateName,
-                job.title,
-                job.recruiter.recruiterProfile?.companyName || 'the company'
+                application.job.title,
+                application.job.recruiter.recruiterProfile?.companyName || 'the company'
             )
         } catch (emailError) {
             console.error('Failed to send application received email:', emailError)
+            // Don't fail the application if email fails
         }
 
         return NextResponse.json(

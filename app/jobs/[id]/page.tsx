@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { useAuth } from '@/components/providers/AuthProvider'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -20,9 +19,9 @@ export default function JobDetailsPage() {
     const params = useParams()
     const router = useRouter()
     const [job, setJob] = useState<any>(null)
-    const { user, loading: authLoading, isAuthenticated, mutate } = useAuth()
-    const userRole = user?.role || null
     const [loading, setLoading] = useState(true)
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
+    const [userRole, setUserRole] = useState<string | null>(null)
     const [showApplyModal, setShowApplyModal] = useState(false)
     const [coverLetter, setCoverLetter] = useState('')
     const [applying, setApplying] = useState(false)
@@ -33,23 +32,35 @@ export default function JobDetailsPage() {
     const [useExistingResume, setUseExistingResume] = useState(true)
 
     useEffect(() => {
+        checkAuth()
         fetchJob()
     }, [])
 
     useEffect(() => {
         if (isAuthenticated && userRole === 'CANDIDATE' && job) {
             checkExistingApplication()
+            fetchProfile()
         }
     }, [isAuthenticated, userRole, job])
 
-    useEffect(() => {
-        if (user?.candidateProfile) {
-            setProfile(user.candidateProfile)
-            if (user.candidateProfile.resumeUrl) {
-                setUseExistingResume(true)
+    const checkAuth = () => {
+        const token = localStorage.getItem('token')
+        const userStr = localStorage.getItem('user')
+
+        if (token && userStr) {
+            try {
+                const user = JSON.parse(userStr)
+                setIsAuthenticated(true)
+                setUserRole(user.role)
+            } catch (error) {
+                setIsAuthenticated(false)
+                setUserRole(null)
             }
+        } else {
+            setIsAuthenticated(false)
+            setUserRole(null)
         }
-    }, [user])
+    }
 
     const fetchJob = async () => {
         try {
@@ -77,6 +88,25 @@ export default function JobDetailsPage() {
             }
         } catch (error) {
             console.error('Failed to check application:', error)
+        }
+    }
+
+    const fetchProfile = async () => {
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/auth/me', {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            const data = await res.json()
+            if (data.user.profile) {
+                setProfile(data.user.profile)
+                // If profile has resume, default to using it
+                if (data.user.profile.resumeUrl) {
+                    setUseExistingResume(true)
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch profile:', error)
         }
     }
 
@@ -112,7 +142,7 @@ export default function JobDetailsPage() {
             if (res.ok) {
                 setApplied(true)
                 // Refresh profile since it was updated in the modal
-                mutate()
+                fetchProfile()
                 setTimeout(() => {
                     setShowApplyModal(false)
                     router.push('/dashboard/candidate/applied')

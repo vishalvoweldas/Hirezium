@@ -2,7 +2,6 @@
 
 import { Navbar } from './Navbar'
 import { MobileBottomNav } from './MobileBottomNav'
-import { useAuth } from '@/components/providers/AuthProvider'
 import { useEffect, useState } from 'react'
 
 interface NavigationWrapperProps {
@@ -10,26 +9,49 @@ interface NavigationWrapperProps {
 }
 
 export function NavigationWrapper({ children }: NavigationWrapperProps) {
-    const { user, loading } = useAuth()
+    const [user, setUser] = useState<any>(null)
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        checkAuth()
+    }, [])
+
+    const checkAuth = async () => {
+        const token = localStorage.getItem('token')
+        if (!token) {
+            setLoading(false)
+            return
+        }
+
+        try {
+            const res = await fetch('/api/auth/me', {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            if (res.ok) {
+                const data = await res.json()
+                setUser(data.user)
+            }
+        } catch (error) {
+            console.error('Auth check failed:', error)
+        } finally {
+            setLoading(false)
+        }
+    }
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <div className="w-16 h-16 border-4 border-[#124A59] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-600 font-medium">Loading Hirezium...</p>
+                    <p className="text-gray-600">Loading...</p>
                 </div>
             </div>
         )
     }
 
-    const userName = user?.candidateProfile
-        ? `${user.candidateProfile.firstName} ${user.candidateProfile.lastName}`
-        : (user?.recruiterProfile?.companyName || user?.email)
-
     return (
         <>
-            <Navbar userRole={user?.role} userName={userName} />
+            <Navbar userRole={user?.role} userName={user?.profile?.fullName || user?.email} />
             <main className="min-h-screen pb-20 md:pb-0">
                 {children}
             </main>

@@ -6,31 +6,9 @@ async function handler(request: AuthenticatedRequest) {
     try {
         const user = await prisma.user.findUnique({
             where: { id: request.user!.userId },
-            select: {
-                id: true,
-                email: true,
-                role: true,
-                approvalStatus: true,
-                candidateProfile: {
-                    select: {
-                        id: true,
-                        firstName: true,
-                        lastName: true,
-                        phone: true,
-                        location: true,
-                        profileCompletion: true,
-                    }
-                },
-                recruiterProfile: {
-                    select: {
-                        id: true,
-                        companyName: true,
-                        companyWebsite: true,
-                        phone: true,
-                        location: true,
-                        designation: true,
-                    }
-                },
+            include: {
+                candidateProfile: true,
+                recruiterProfile: true,
             },
         })
 

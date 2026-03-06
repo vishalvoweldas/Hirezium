@@ -8,12 +8,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { User, Building, MapPin, Phone, Briefcase, Lock, Mail } from 'lucide-react'
-import { useAuth } from '@/components/providers/AuthProvider'
 
 export default function RecruiterProfilePage() {
     const router = useRouter()
-    const { user, loading: authLoading, mutate } = useAuth()
     const [loading, setLoading] = useState(false)
+    const [fetching, setFetching] = useState(true)
     const [formData, setFormData] = useState({
         companyName: '',
         companyWebsite: '',
@@ -26,18 +25,47 @@ export default function RecruiterProfilePage() {
     })
 
     useEffect(() => {
-        if (user) {
-            setFormData(prev => ({
-                ...prev,
-                companyName: user.profile?.companyName || '',
-                companyWebsite: user.profile?.companyWebsite || '',
-                phone: user.profile?.phone || '',
-                location: user.profile?.location || '',
-                designation: user.profile?.designation || '',
-                email: user.email || '',
-            }))
+        fetchProfile()
+    }, [])
+
+    const fetchProfile = async () => {
+        const token = localStorage.getItem('token')
+        if (!token) {
+            router.push('/auth/login')
+            return
         }
-    }, [user])
+
+        try {
+            const res = await fetch('/api/recruiter/profile', {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+
+            if (!res.ok) {
+                if (res.status === 401) {
+                    router.push('/auth/login')
+                    return
+                }
+                throw new Error('Failed to fetch profile')
+            }
+
+            const data = await res.json()
+            if (data.user) {
+                setFormData(prev => ({
+                    ...prev,
+                    companyName: data.user.companyName || '',
+                    companyWebsite: data.user.companyWebsite || '',
+                    phone: data.user.phone || '',
+                    location: data.user.location || '',
+                    designation: data.user.designation || '',
+                    email: data.user.email || '',
+                }))
+            }
+        } catch (error) {
+            console.error('Failed to fetch profile:', error)
+        } finally {
+            setFetching(false)
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -77,7 +105,6 @@ export default function RecruiterProfilePage() {
 
             if (res.ok) {
                 alert('Profile updated successfully!')
-                mutate()
                 // Clear password fields
                 setFormData(prev => ({
                     ...prev,
@@ -95,7 +122,7 @@ export default function RecruiterProfilePage() {
         }
     }
 
-    if (authLoading || !user) {
+    if (fetching) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>

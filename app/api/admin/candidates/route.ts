@@ -12,10 +12,6 @@ async function getCandidatesHandler(request: AuthenticatedRequest) {
         const maxExp = searchParams.get('maxExperience')
         const search = searchParams.get('search') // name or email
 
-        const page = parseInt(searchParams.get('page') || '1')
-        const limit = parseInt(searchParams.get('limit') || '10')
-        const skip = (page - 1) * limit
-
         const where: any = {
             role: UserRole.CANDIDATE,
         }
@@ -50,41 +46,15 @@ async function getCandidatesHandler(request: AuthenticatedRequest) {
             ]
         }
 
-        const [candidates, total] = await Promise.all([
-            prisma.user.findMany({
-                where,
-                select: {
-                    id: true,
-                    email: true,
-                    createdAt: true,
-                    approvalStatus: true,
-                    candidateProfile: {
-                        select: {
-                            firstName: true,
-                            lastName: true,
-                            phone: true,
-                            location: true,
-                            experience: true,
-                            skills: true,
-                        }
-                    },
-                },
-                orderBy: { createdAt: 'desc' },
-                skip,
-                take: limit,
-            }),
-            prisma.user.count({ where }),
-        ])
-
-        return NextResponse.json({
-            candidates,
-            pagination: {
-                page,
-                limit,
-                total,
-                totalPages: Math.ceil(total / limit),
-            }
+        const candidates = await prisma.user.findMany({
+            where,
+            include: {
+                candidateProfile: true,
+            },
+            orderBy: { createdAt: 'desc' },
         })
+
+        return NextResponse.json({ candidates })
     } catch (error) {
         console.error('Get candidates error:', error)
         return NextResponse.json(

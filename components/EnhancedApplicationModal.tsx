@@ -92,40 +92,24 @@ export default function EnhancedApplicationModal({
         setUploading(true)
         try {
             const token = localStorage.getItem('token')
-
-            // 1. Get signature from server
-            const signRes = await fetch('/api/upload/sign', {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-
-            if (!signRes.ok) throw new Error('Failed to get upload signature')
-            const { signature, timestamp, cloudName, apiKey } = await signRes.json()
-
-            // 2. Upload directly to Cloudinary
             const uploadFormData = new FormData()
             uploadFormData.append('file', resumeFile)
-            uploadFormData.append('signature', signature)
-            uploadFormData.append('timestamp', timestamp.toString())
-            uploadFormData.append('api_key', apiKey)
-            uploadFormData.append('folder', 'hirezium/resumes')
-            uploadFormData.append('resource_type', 'raw')
-            uploadFormData.append('type', 'authenticated')
 
-            const uploadRes = await fetch(
-                `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
-                {
-                    method: 'POST',
-                    body: uploadFormData,
-                }
-            )
+            const res = await fetch('/api/upload/resume', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: uploadFormData,
+            })
 
-            if (!uploadRes.ok) {
-                const errorData = await uploadRes.json()
-                throw new Error(errorData.error?.message || 'Cloudinary upload failed')
+            if (!res.ok) {
+                const errorData = await res.json()
+                throw new Error(errorData.error || 'Upload failed')
             }
 
-            const data = await uploadRes.json()
-            return { url: data.secure_url, publicId: data.public_id }
+            const data = await res.json()
+            return { url: data.url, publicId: data.publicId }
         } catch (error: any) {
             console.error('Resume upload failed:', error)
             alert('Failed to upload resume: ' + (error.message || 'Unknown error'))
